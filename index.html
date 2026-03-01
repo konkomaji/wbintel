@@ -1,0 +1,1321 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>WBIntel — West Bengal State Monitor</title>
+<meta name="author" content="Konko Maji">
+<meta name="description" content="Real-time West Bengal state intelligence monitor — crime, business, tech, politics, weather, live TV, all districts">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=JetBrains+Mono:wght@400;500;700&family=Source+Sans+3:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+/* ═══════════════════════════════════════════════════
+   WBIntel — West Bengal State Monitor v6.0
+   Live weather · Twitter embed · SVG Map · Politics
+   Developed by Konko Maji · MIT License · Open Source
+   ═══════════════════════════════════════════════════ */
+:root{
+  --ink:#060710; --bg1:#0b0d1a; --bg2:#0f1120; --bg3:#131527; --bg4:#181a2e;
+  --b0:#1a1d30; --b1:#222540; --b2:#2c2f52;
+  --am:#ffaa00; --am2:#ffd060; --amd:#7a4800; --ag:rgba(255,170,0,.08);
+  --red:#ff2d55; --grn:#00d4aa; --blu:#3d9eff; --cyn:#00c8e0;
+  --pnk:#ff4d8f; --lim:#7dff6b; --pur:#a97fff; --org:#ff6b00;
+  --t0:#eef0ff; --t1:#b0b4d0; --t2:#545870; --t3:#32354e;
+  /* category */
+  --c-crime:#ff2d55; --c-fire:#ff6b00; --c-pol:#ffaa00;
+  --c-biz:#3d9eff;   --c-fin:#00d4aa;  --c-re:#00c8e0;
+  --c-tech:#a97fff;  --c-life:#ff4d8f; --c-sport:#7dff6b;
+  --c-health:#ff9f43;--c-gov:#4fc3f7;  --c-wx:#80deea;
+}
+*,*::before,*::after{margin:0;padding:0;box-sizing:border-box;}
+html,body{height:100%;overflow:hidden;}
+body{background:var(--ink);color:var(--t1);font-family:'Source Sans 3',sans-serif;font-size:12px;display:flex;flex-direction:column;line-height:1.45;}
+body::before{content:'';position:fixed;inset:0;background:radial-gradient(ellipse 70% 35% at 15% 0%,rgba(61,158,255,.04)0%,transparent 60%),radial-gradient(ellipse 55% 28% at 85% 100%,rgba(0,212,170,.03)0%,transparent 60%);pointer-events:none;z-index:0;}
+body::after{content:'';position:fixed;inset:0;background:repeating-linear-gradient(0deg,transparent,transparent 2px,rgba(0,0,0,.025)2px,rgba(0,0,0,.025)3px);pointer-events:none;z-index:9998;}
+button{cursor:pointer;border:none;background:none;font:inherit;color:inherit;}
+a{color:inherit;text-decoration:none;}
+::-webkit-scrollbar{width:2px;height:2px;}
+::-webkit-scrollbar-thumb{background:var(--b2);}
+
+/* ── KEYFRAMES ── */
+@keyframes scroll-l{from{transform:translateX(0)}to{transform:translateX(-50%)}}
+@keyframes pulse{0%,100%{opacity:1}50%{opacity:.2}}
+@keyframes fadein{from{opacity:0;transform:translateY(-4px)}to{opacity:1;transform:none}}
+@keyframes blink{0%,100%{opacity:1}50%{opacity:.3}}
+@keyframes map-ping{0%{r:4;opacity:1}100%{r:14;opacity:0}}
+@keyframes map-glow{0%,100%{filter:drop-shadow(0 0 3px var(--am))}50%{filter:drop-shadow(0 0 8px var(--am))}}
+
+/* ── TICKER ── */
+.ticker{height:23px;background:var(--ink);border-bottom:1px solid #1e0a00;display:flex;align-items:center;flex-shrink:0;overflow:hidden;position:relative;z-index:10;}
+.tk-flag{background:var(--red);color:#fff;font-family:'Bebas Neue',sans-serif;font-size:11px;letter-spacing:3px;padding:0 12px;height:100%;display:flex;align-items:center;gap:5px;flex-shrink:0;}
+.tk-dot{width:5px;height:5px;background:#fff;border-radius:50%;animation:pulse 1s infinite;}
+.tk-sc{flex:1;overflow:hidden;}
+.tk-in{display:flex;white-space:nowrap;animation:scroll-l 140s linear infinite;}
+.ti{font-family:'JetBrains Mono',monospace;font-size:9.5px;color:var(--am);padding:0 38px;}
+.ti::before{content:'◆ ';color:var(--amd);font-size:5px;vertical-align:middle;}
+.ti.r{color:#ffaabb;}.ti.r::before{color:var(--red);}
+.ti.g{color:#80ffea;}.ti.g::before{color:var(--grn);}
+.ti.b{color:#90caff;}.ti.b::before{color:var(--blu);}
+
+/* ── HEADER ── */
+.hdr{height:48px;background:linear-gradient(180deg,var(--bg1)0%,var(--ink)100%);border-bottom:1px solid var(--b0);display:flex;align-items:center;padding:0 10px;gap:0;flex-shrink:0;position:relative;z-index:10;}
+.hdr::after{content:'';position:absolute;bottom:-1px;left:0;right:0;height:1px;background:linear-gradient(90deg,transparent,var(--am) 25%,var(--cyn) 75%,transparent);opacity:.1;}
+.brand{display:flex;align-items:flex-end;gap:0;margin-right:12px;flex-shrink:0;}
+.b-wb{font-family:'Bebas Neue',sans-serif;font-size:34px;letter-spacing:2px;color:var(--am);line-height:1;text-shadow:0 0 20px rgba(255,170,0,.22);}
+.b-in{font-family:'Bebas Neue',sans-serif;font-size:34px;letter-spacing:1px;color:var(--t3);line-height:1;}
+.b-sep{width:1px;height:26px;background:var(--b0);margin:0 10px;flex-shrink:0;align-self:center;}
+.b-sub{font-family:'JetBrains Mono',monospace;font-size:6.5px;letter-spacing:2px;color:var(--t3);text-transform:uppercase;padding-bottom:5px;white-space:nowrap;}
+.hdiv{width:1px;height:26px;background:var(--b0);margin:0 8px;flex-shrink:0;}
+.hst{display:flex;flex-direction:column;align-items:center;gap:0;flex-shrink:0;}
+.hv{font-family:'Bebas Neue',sans-serif;font-size:21px;color:var(--t0);line-height:1.05;}
+.hv.r{color:var(--red);}.hv.g{color:var(--grn);}.hv.a{color:var(--am);}.hv.b{color:var(--blu);}
+.hl{font-family:'JetBrains Mono',monospace;font-size:6px;letter-spacing:1.2px;color:var(--t3);text-transform:uppercase;}
+.hright{margin-left:auto;display:flex;align-items:center;gap:5px;flex-shrink:0;}
+.live-b{display:flex;align-items:center;gap:5px;background:rgba(255,45,85,.07);border:1px solid rgba(255,45,85,.35);border-radius:2px;padding:2px 8px;font-family:'Bebas Neue',sans-serif;font-size:12px;letter-spacing:3px;color:var(--red);}
+.hbtn{font-family:'JetBrains Mono',monospace;font-size:8.5px;letter-spacing:1px;padding:3px 9px;border-radius:2px;border:1px solid;white-space:nowrap;transition:all .15s;}
+.hb-a{color:var(--am);border-color:rgba(255,170,0,.3);background:var(--ag);}
+.hb-a:hover{background:rgba(255,170,0,.14);}
+.hb-g{color:var(--grn);border-color:rgba(0,212,170,.25);background:rgba(0,212,170,.05);}
+.hb-g:hover{background:rgba(0,212,170,.12);}
+.hb-r{color:var(--red);border-color:rgba(255,45,85,.3);background:rgba(255,45,85,.05);}
+.hb-r:hover{background:rgba(255,45,85,.1);}
+.clk{font-family:'JetBrains Mono',monospace;font-size:12px;color:var(--t0);background:var(--bg2);border:1px solid var(--b1);padding:3px 8px;border-radius:2px;letter-spacing:1px;}
+.clk em{color:var(--am);font-style:normal;}
+/* weather in header */
+.wx-hdr{display:flex;align-items:center;gap:4px;background:var(--bg2);border:1px solid var(--b1);border-radius:2px;padding:2px 7px;flex-shrink:0;}
+.wx-hv{font-family:'Bebas Neue',sans-serif;font-size:17px;color:var(--cyn);}
+.wx-hd{font-family:'JetBrains Mono',monospace;font-size:7px;color:var(--t2);line-height:1.3;}
+.wx-loc{font-size:8px;font-weight:600;color:var(--t1);}
+
+/* ── MAIN 5-COL GRID ── */
+.main{display:grid;grid-template-columns:var(--c1,188px) var(--c2,1fr) var(--c3,252px) var(--c4,1fr) var(--c5,188px);flex:1;overflow:hidden;position:relative;z-index:1;}
+.col{display:flex;flex-direction:column;overflow:hidden;border-right:1px solid var(--b0);}
+.col:last-child{border-right:none;}
+
+/* ── PANEL HEADER ── */
+.ph{height:28px;padding:0 8px;background:var(--bg2);border-bottom:1px solid var(--b0);display:flex;align-items:center;justify-content:space-between;flex-shrink:0;}
+.pt{font-family:'Bebas Neue',sans-serif;font-size:12.5px;letter-spacing:2px;color:var(--am);}
+.pt.r{color:var(--red);}.pt.g{color:var(--grn);}.pt.b{color:var(--blu);}
+.pt.c{color:var(--cyn);}.pt.p{color:var(--pur);}.pt.pk{color:var(--pnk);}
+.badge{font-family:'JetBrains Mono',monospace;font-size:7.5px;padding:1px 5px;border-radius:2px;}
+.ba{background:var(--ag);border:1px solid var(--amd);color:var(--am);}
+.br{background:rgba(255,45,85,.1);border:1px solid rgba(255,45,85,.3);color:var(--red);}
+.bg{background:rgba(0,212,170,.07);border:1px solid rgba(0,212,170,.2);color:var(--grn);}
+.bb{background:rgba(61,158,255,.08);border:1px solid rgba(61,158,255,.22);color:var(--blu);}
+.bc{background:rgba(0,200,224,.07);border:1px solid rgba(0,200,224,.2);color:var(--cyn);}
+.bp{background:rgba(169,127,255,.08);border:1px solid rgba(169,127,255,.22);color:var(--pur);}
+.sc{overflow-y:auto;flex:1;scrollbar-width:thin;scrollbar-color:var(--b2) transparent;}
+.slbl{font-family:'JetBrains Mono',monospace;font-size:6.5px;letter-spacing:2px;color:var(--t3);text-transform:uppercase;padding:3px 8px 2px;background:var(--bg1);border-top:1px solid var(--b0);border-bottom:1px solid var(--b0);flex-shrink:0;}
+
+/* ══ COL 1: TV + CAMS ══ */
+.cam-grid{display:grid;grid-template-columns:1fr 1fr;gap:2px;padding:4px;flex-shrink:0;}
+.cam-cell{position:relative;background:var(--bg3);border:1px solid var(--b0);border-radius:2px;overflow:hidden;aspect-ratio:16/9;cursor:pointer;}
+.cam-cell iframe{width:100%;height:100%;border:none;display:block;}
+.cam-ph{width:100%;height:100%;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:3px;transition:background .15s;}
+.cam-ph:hover{background:var(--bg4);}
+.cam-nm{font-family:'Bebas Neue',sans-serif;font-size:9.5px;letter-spacing:1px;color:var(--t2);text-align:center;line-height:1.2;}
+.cam-btn{font-family:'JetBrains Mono',monospace;font-size:7px;letter-spacing:1px;padding:2px 6px;background:rgba(255,45,85,.1);border:1px solid rgba(255,45,85,.28);color:var(--red);border-radius:1px;margin-top:1px;}
+.cam-ov{position:absolute;bottom:0;left:0;right:0;background:linear-gradient(transparent,rgba(0,0,0,.8));padding:2px 5px;font-family:'JetBrains Mono',monospace;font-size:8px;font-weight:700;color:#fff;display:flex;align-items:center;gap:3px;pointer-events:none;}
+.cam-live{width:4px;height:4px;background:var(--red);border-radius:50%;animation:pulse 1s infinite;}
+
+.traf-grid{display:grid;grid-template-columns:1fr 1fr;gap:2px;padding:4px;flex-shrink:0;}
+.tc{position:relative;background:var(--bg3);border:1px solid var(--b0);border-radius:2px;aspect-ratio:16/9;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:2px;cursor:pointer;transition:border-color .15s;overflow:hidden;}
+.tc:hover{border-color:var(--b2);}
+.tc-nm{font-family:'Bebas Neue',sans-serif;font-size:8.5px;letter-spacing:.8px;color:var(--t2);text-align:center;}
+.tc-st{font-family:'JetBrains Mono',monospace;font-size:7px;}
+.tc-st.ok{color:var(--grn);}.tc-st.slow{color:var(--am);}.tc-st.block{color:var(--red);}
+.tc.loaded iframe{position:absolute;inset:0;width:100%;height:100%;border:none;}
+.tc.loaded .cam-ov{font-size:7px;}
+
+.ch-list .ch-row{display:flex;align-items:center;gap:6px;padding:4px 8px;border-bottom:1px solid var(--b0);cursor:pointer;transition:background .12s;}
+.ch-list .ch-row:hover{background:var(--bg3);}
+.ch-nm{font-size:10px;font-weight:600;flex:1;}
+.ch-go{font-family:'Bebas Neue',sans-serif;font-size:9px;letter-spacing:1px;padding:1px 5px;background:rgba(255,45,85,.08);border:1px solid rgba(255,45,85,.25);color:var(--red);border-radius:1px;}
+.ch-go:hover{background:rgba(255,45,85,.16);}
+
+/* ══ MASTER FEED ══ */
+.cat-pills{display:flex;gap:2px;padding:4px 5px;background:var(--bg2);border-bottom:1px solid var(--b0);flex-shrink:0;flex-wrap:wrap;}
+.cp{font-family:'JetBrains Mono',monospace;font-size:7px;font-weight:700;padding:2px 6px;border-radius:2px;border:1px solid var(--b1);color:var(--t3);transition:all .12s;cursor:pointer;letter-spacing:.3px;}
+.cp:hover,.cp.on{color:var(--am);border-color:rgba(255,170,0,.35);background:var(--ag);}
+.cp.on.r{color:var(--red);border-color:rgba(255,45,85,.4);background:rgba(255,45,85,.07);}
+.cp.on.g{color:var(--grn);border-color:rgba(0,212,170,.3);background:rgba(0,212,170,.06);}
+.cp.on.b{color:var(--blu);border-color:rgba(61,158,255,.35);background:rgba(61,158,255,.06);}
+.cp.on.c{color:var(--cyn);border-color:rgba(0,200,224,.3);background:rgba(0,200,224,.06);}
+.cp.on.p{color:var(--pur);border-color:rgba(169,127,255,.35);background:rgba(169,127,255,.07);}
+.cp.on.pk{color:var(--pnk);border-color:rgba(255,77,143,.35);background:rgba(255,77,143,.06);}
+
+.nc{margin:2px 4px;padding:5px 7px;background:var(--bg3);border:1px solid var(--b0);border-radius:2px;cursor:pointer;transition:border-color .12s,background .12s;animation:fadein .25s ease;position:relative;overflow:hidden;}
+.nc::before{content:'';position:absolute;top:0;left:0;width:2px;height:100%;}
+.nc.crime::before{background:var(--c-crime);} .nc.fire::before{background:var(--c-fire);}
+.nc.pol::before{background:var(--c-pol);}     .nc.biz::before{background:var(--c-biz);}
+.nc.fin::before{background:var(--c-fin);}     .nc.re::before{background:var(--c-re);}
+.nc.tech::before{background:var(--c-tech);}   .nc.life::before{background:var(--c-life);}
+.nc.sport::before{background:var(--c-sport);} .nc.health::before{background:var(--c-health);}
+.nc.gov::before{background:var(--c-gov);}     .nc.wx::before{background:var(--c-wx);}
+.nc:hover{border-color:var(--b2);background:rgba(255,255,255,.014);}
+.nm{display:flex;align-items:center;gap:3px;margin-bottom:2px;flex-wrap:wrap;}
+.n-src{font-family:'JetBrains Mono',monospace;font-size:7px;color:var(--t3);text-transform:uppercase;}
+.n-tag{font-family:'Bebas Neue',sans-serif;font-size:9px;letter-spacing:.8px;padding:0 4px;border-radius:1px;border:1px solid;}
+.nt-crime{background:rgba(255,45,85,.1); color:#ffaabb;border-color:rgba(255,45,85,.28);}
+.nt-fire {background:rgba(255,107,0,.1); color:#ffb74d;border-color:rgba(255,107,0,.28);}
+.nt-pol  {background:rgba(255,170,0,.1); color:var(--am2);border-color:rgba(255,170,0,.28);}
+.nt-biz  {background:rgba(61,158,255,.1);color:#90caff;border-color:rgba(61,158,255,.28);}
+.nt-fin  {background:rgba(0,212,170,.08);color:#80ffea;border-color:rgba(0,212,170,.2);}
+.nt-re   {background:rgba(0,200,224,.08);color:#80deea;border-color:rgba(0,200,224,.2);}
+.nt-tech {background:rgba(169,127,255,.1);color:#d8b4fe;border-color:rgba(169,127,255,.28);}
+.nt-life {background:rgba(255,77,143,.1);color:#ffb3c6;border-color:rgba(255,77,143,.28);}
+.nt-sport{background:rgba(125,255,107,.09);color:#a8ff96;border-color:rgba(125,255,107,.25);}
+.nt-hlth {background:rgba(255,159,67,.09);color:#ffd28a;border-color:rgba(255,159,67,.25);}
+.nt-gov  {background:rgba(79,195,247,.08);color:#b3e5fc;border-color:rgba(79,195,247,.2);}
+.nt-wx   {background:rgba(128,222,234,.08);color:#b2ebf2;border-color:rgba(128,222,234,.2);}
+.n-time{font-family:'JetBrains Mono',monospace;font-size:7px;color:var(--t3);margin-left:auto;}
+.n-hl{font-size:11px;font-weight:600;color:var(--t0);line-height:1.36;margin-bottom:2px;}
+.n-meta{display:flex;align-items:center;gap:5px;}
+.n-loc{font-size:8px;color:var(--t2);}
+.n-loc b{color:var(--am);font-weight:600;}
+
+/* ══ COL 3 CENTER: MAP + TWITTER + POLITICS ══ */
+/* SVG MAP */
+.map-wrap{flex-shrink:0;padding:8px 10px 5px;background:var(--bg1);border-bottom:1px solid var(--b0);}
+.map-hdr{display:flex;align-items:center;justify-content:space-between;margin-bottom:5px;}
+.map-title{font-family:'Bebas Neue',sans-serif;font-size:12px;letter-spacing:2.5px;color:var(--am);}
+.map-legend{display:flex;align-items:center;gap:6px;}
+.ml{display:flex;align-items:center;gap:2px;font-family:'JetBrains Mono',monospace;font-size:6.5px;}
+.ml-dot{width:5px;height:5px;border-radius:50%;}
+#wbMap{width:100%;height:auto;display:block;}
+.dist-dot{cursor:pointer;transition:r .2s;}
+.dist-dot:hover{r:7;}
+.ping-circle{animation:map-ping .8s ease-out forwards;}
+.glow-label{animation:map-glow 2s ease-in-out infinite;}
+/* twitter */
+.tw-wrap{flex-shrink:0;overflow:hidden;border-bottom:1px solid var(--b0);}
+.tw-inner{overflow-y:auto;max-height:100%;}
+/* politics feed */
+.pol-feed{flex:1;overflow-y:auto;}
+.pol-item{margin:2px 4px;padding:5px 7px;background:var(--bg3);border:1px solid rgba(255,170,0,.15);border-left:2px solid var(--am);border-radius:2px;animation:fadein .25s ease;}
+.pol-meta{display:flex;align-items:center;gap:4px;margin-bottom:2px;}
+.pol-src{font-family:'JetBrains Mono',monospace;font-size:7px;color:var(--am);text-transform:uppercase;}
+.pol-tag{font-family:'Bebas Neue',sans-serif;font-size:9px;letter-spacing:.8px;padding:0 4px;border-radius:1px;background:rgba(255,170,0,.1);color:var(--am2);border:1px solid rgba(255,170,0,.25);}
+.pol-time{font-family:'JetBrains Mono',monospace;font-size:7px;color:var(--t3);margin-left:auto;}
+.pol-tx{font-size:10.5px;font-weight:500;color:var(--t0);line-height:1.38;margin-bottom:1px;}
+.pol-loc{font-size:8px;color:var(--t2);}
+.pol-loc b{color:var(--am);font-weight:600;}
+
+/* ══ COL 4: CRIME + BIZ PANELS ══ */
+.pi{margin:2px 4px;padding:5px 7px;background:var(--bg3);border:1px solid rgba(255,170,0,.12);border-left:2px solid var(--am);border-radius:2px;animation:fadein .25s ease;}
+.pi.crit{border-left-color:var(--red);border-color:rgba(255,45,85,.12);}
+.pi.info{border-left-color:var(--grn);border-color:rgba(0,212,170,.1);}
+.pm{display:flex;align-items:center;gap:4px;margin-bottom:2px;}
+.psrc{font-family:'JetBrains Mono',monospace;font-size:7px;color:var(--am);text-transform:uppercase;}
+.pi.crit .psrc{color:var(--red);}
+.pi.info .psrc{color:var(--grn);}
+.ptyp{font-family:'Bebas Neue',sans-serif;font-size:9px;letter-spacing:.8px;padding:0 4px;border-radius:1px;background:rgba(255,170,0,.1);color:var(--am);border:1px solid rgba(255,170,0,.22);}
+.pi.crit .ptyp{background:rgba(255,45,85,.1);color:#ffaabb;border-color:rgba(255,45,85,.28);}
+.pi.info .ptyp{background:rgba(0,212,170,.07);color:#80ffea;border-color:rgba(0,212,170,.18);}
+.ptm{font-family:'JetBrains Mono',monospace;font-size:7px;color:var(--t3);margin-left:auto;}
+.ptx{font-size:10px;color:var(--t0);line-height:1.38;margin-bottom:1px;}
+.ploc{font-size:8px;color:var(--t2);}
+.ploc b{color:var(--am);font-weight:600;}
+.pi.crit .ploc b{color:var(--red);}
+
+.bc2{margin:2px 4px;padding:5px 7px;background:var(--bg3);border:1px solid var(--b0);border-left:2px solid var(--blu);border-radius:2px;animation:fadein .25s ease;}
+.bc2.re{border-left-color:var(--cyn);}
+.bc2.tech{border-left-color:var(--pur);}
+.bc2.fin{border-left-color:var(--grn);}
+.bc2.life{border-left-color:var(--pnk);}
+.b2m{display:flex;align-items:center;gap:4px;margin-bottom:2px;}
+.b2s{font-family:'JetBrains Mono',monospace;font-size:7px;color:var(--t3);text-transform:uppercase;}
+.b2t{font-family:'Bebas Neue',sans-serif;font-size:9px;letter-spacing:.8px;padding:0 4px;border-radius:1px;}
+.b2t-biz {background:rgba(61,158,255,.1);color:#90caff;border:1px solid rgba(61,158,255,.25);}
+.b2t-re  {background:rgba(0,200,224,.08);color:#80deea;border:1px solid rgba(0,200,224,.2);}
+.b2t-tech{background:rgba(169,127,255,.1);color:#d8b4fe;border:1px solid rgba(169,127,255,.25);}
+.b2t-fin {background:rgba(0,212,170,.08);color:#80ffea;border:1px solid rgba(0,212,170,.18);}
+.b2t-life{background:rgba(255,77,143,.09);color:#ffb3c6;border:1px solid rgba(255,77,143,.22);}
+.b2tm{font-family:'JetBrains Mono',monospace;font-size:7px;color:var(--t3);margin-left:auto;}
+.b2hl{font-size:10.5px;font-weight:500;color:var(--t0);line-height:1.38;margin-bottom:1px;}
+.b2l{font-size:8px;color:var(--t2);}
+.b2l b{color:var(--cyn);font-weight:600;}
+
+/* Finance */
+.fin-row{display:flex;align-items:center;gap:5px;padding:4px 7px;border-bottom:1px solid var(--b0);transition:background .12s;}
+.fin-row:hover{background:var(--bg3);}
+.fin-nm{font-family:'JetBrains Mono',monospace;font-size:8.5px;color:var(--t1);flex:1;}
+.fin-v{font-family:'Bebas Neue',sans-serif;font-size:14px;color:var(--t0);}
+.fin-c{font-family:'JetBrains Mono',monospace;font-size:7.5px;padding:1px 5px;border-radius:2px;min-width:50px;text-align:center;}
+.fin-up{background:rgba(0,212,170,.08);color:#80ffea;border:1px solid rgba(0,212,170,.18);}
+.fin-dn{background:rgba(255,45,85,.08);color:#ffaabb;border:1px solid rgba(255,45,85,.18);}
+.fin-nc{background:rgba(84,88,112,.1);color:var(--t2);border:1px solid var(--b1);}
+
+/* ══ COL 5: WEATHER + DISTRICTS + SOURCES ══ */
+.wx-card{padding:6px 8px;border-bottom:1px solid var(--b0);flex-shrink:0;}
+.wx-big{font-family:'Bebas Neue',sans-serif;font-size:42px;color:var(--cyn);line-height:1;}
+.wx-row1{display:flex;align-items:flex-end;gap:5px;margin-bottom:2px;}
+.wx-cond{font-size:11px;font-weight:600;color:var(--t1);}
+.wx-city-name{font-family:'JetBrains Mono',monospace;font-size:8px;color:var(--am);letter-spacing:1px;text-transform:uppercase;}
+.wx-details{display:grid;grid-template-columns:1fr 1fr;gap:3px;margin-top:4px;}
+.wx-d{display:flex;flex-direction:column;}
+.wx-dl{font-family:'JetBrains Mono',monospace;font-size:6.5px;color:var(--t3);letter-spacing:.5px;text-transform:uppercase;}
+.wx-dv{font-family:'JetBrains Mono',monospace;font-size:10px;color:var(--t1);}
+.wx-loc-btn{font-family:'JetBrains Mono',monospace;font-size:7.5px;padding:2px 7px;background:rgba(0,200,224,.07);border:1px solid rgba(0,200,224,.2);color:var(--cyn);border-radius:2px;cursor:pointer;width:100%;margin-top:4px;}
+.wx-loc-btn:hover{background:rgba(0,200,224,.14);}
+
+.dist-row{display:flex;align-items:center;gap:5px;padding:4px 7px;border-bottom:1px solid var(--b0);cursor:pointer;transition:background .12s;position:relative;}
+.dist-row:hover{background:var(--bg3);}
+.dist-row::before{content:'';position:absolute;left:0;top:0;bottom:0;width:2px;}
+.dist-row.hot::before{background:var(--red);}
+.dist-row.warm::before{background:var(--am);}
+.dist-row.mild::before{background:var(--grn);opacity:.7;}
+.dist-row.cool::before{background:var(--blu);opacity:.5;}
+.d-rk{font-family:'JetBrains Mono',monospace;font-size:7px;color:var(--t3);width:14px;text-align:right;flex-shrink:0;}
+.d-nm{font-size:10px;font-weight:600;flex:1;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;}
+.d-sc{font-family:'Bebas Neue',sans-serif;font-size:14px;}
+.dist-row.hot .d-sc{color:var(--red);}
+.dist-row.warm .d-sc{color:var(--am);}
+.dist-row.mild .d-sc{color:var(--grn);}
+.dist-row.cool .d-sc{color:var(--blu);}
+.d-ev{font-family:'JetBrains Mono',monospace;font-size:7px;color:var(--t3);}
+
+.src-sec{font-family:'JetBrains Mono',monospace;font-size:6.5px;letter-spacing:2px;color:var(--t3);text-transform:uppercase;padding:3px 7px 2px;background:var(--bg1);border-top:1px solid var(--b0);border-bottom:1px solid var(--b0);}
+.src-row{display:flex;align-items:center;gap:4px;padding:3px 7px;border-bottom:1px solid var(--b0);transition:background .12s;}
+.src-row:hover{background:var(--bg3);}
+.s-dot{width:4px;height:4px;border-radius:50%;flex-shrink:0;}
+.s-dot.live{background:var(--grn);animation:blink 2.5s infinite;}
+.s-dot.idle{background:var(--am);animation:blink 4s infinite;}
+.s-dot.off{background:var(--t3);}
+.s-nm{font-size:9.5px;font-weight:500;flex:1;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;}
+.s-ty{font-family:'JetBrains Mono',monospace;font-size:6.5px;color:var(--t3);flex-shrink:0;}
+.s-cn{font-family:'Bebas Neue',sans-serif;font-size:13px;color:var(--am);flex-shrink:0;}
+
+/* ── BOTTOM BAR ── */
+.bbar{height:25px;background:var(--bg2);border-top:1px solid var(--b0);display:flex;align-items:center;padding:0 10px;gap:7px;flex-shrink:0;overflow:hidden;position:relative;z-index:10;}
+.bst{display:flex;align-items:center;gap:2px;white-space:nowrap;}
+.bsl{font-family:'JetBrains Mono',monospace;font-size:6.5px;letter-spacing:.8px;color:var(--t3);}
+.bsv{font-family:'Bebas Neue',sans-serif;font-size:13px;color:var(--am);}
+.bsv.r{color:var(--red);}.bsv.g{color:var(--grn);}
+.bdiv{width:1px;height:11px;background:var(--b1);}
+.btx{flex:1;overflow:hidden;}
+.btxt{font-family:'JetBrains Mono',monospace;font-size:7.5px;color:var(--t3);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
+.bcred{font-family:'JetBrains Mono',monospace;font-size:7px;color:var(--t3);margin-left:auto;white-space:nowrap;}
+.bcred a{color:var(--am);}
+
+/* ── MODALS ── */
+.ov{display:none;position:fixed;inset:0;background:rgba(0,0,0,.82);z-index:1000;align-items:flex-start;justify-content:flex-end;}
+.ov.on{display:flex;}
+.ov.center{justify-content:center;align-items:center;}
+.cfg-p{width:420px;height:100%;background:var(--bg2);border-left:1px solid var(--b2);display:flex;flex-direction:column;overflow:hidden;}
+.cfg-h{padding:12px 16px;border-bottom:1px solid var(--b1);background:var(--bg1);display:flex;align-items:center;justify-content:space-between;flex-shrink:0;}
+.cfg-t{font-family:'Bebas Neue',sans-serif;font-size:20px;letter-spacing:3px;color:var(--am);}
+.cfg-x{font-size:18px;color:var(--t2);}.cfg-x:hover{color:var(--t0);}
+.cfg-b{overflow-y:auto;flex:1;padding:14px 16px;}
+.cs{margin-bottom:16px;}
+.cst{font-family:'Bebas Neue',sans-serif;font-size:12.5px;letter-spacing:2px;color:var(--am);border-bottom:1px solid var(--b1);padding-bottom:4px;margin-bottom:8px;}
+.cr{margin-bottom:7px;}
+.clbl{font-family:'JetBrains Mono',monospace;font-size:7.5px;letter-spacing:.8px;color:var(--t3);text-transform:uppercase;margin-bottom:3px;display:flex;justify-content:space-between;}
+.clbl span{color:var(--grn);}
+.ci{width:100%;background:var(--bg3);border:1px solid var(--b1);border-radius:2px;padding:5px 8px;font-family:'JetBrains Mono',monospace;font-size:10px;color:var(--t0);outline:none;transition:border-color .15s;}
+.ci:focus{border-color:rgba(255,170,0,.4);}.ci::placeholder{color:var(--t3);}
+textarea.ci{resize:vertical;min-height:54px;line-height:1.5;}
+.togrow{display:flex;align-items:center;justify-content:space-between;margin-bottom:5px;}
+.togl{font-size:11px;color:var(--t1);}
+.tog{width:30px;height:16px;background:var(--b2);border-radius:8px;position:relative;border:none;flex-shrink:0;transition:background .18s;}
+.tog.on{background:rgba(255,170,0,.55);}
+.tog::after{content:'';position:absolute;top:2px;left:2px;width:12px;height:12px;background:#fff;border-radius:50%;transition:transform .16s;}
+.tog.on::after{transform:translateX(14px);}
+.cfg-btn{width:100%;padding:8px;background:var(--am);color:#000;border:none;border-radius:2px;font-family:'Bebas Neue',sans-serif;font-size:15px;letter-spacing:2px;margin-top:2px;cursor:pointer;}
+.cfg-btn:hover{filter:brightness(1.1);}
+.cfg-btn.sec{background:transparent;color:var(--t2);border:1px solid var(--b1);margin-top:5px;font-size:12px;}
+.cfg-btn.sec:hover{color:var(--t0);}
+.cfg-ok{font-family:'JetBrains Mono',monospace;font-size:8px;color:var(--grn);text-align:center;margin-top:5px;display:none;}
+.cfg-ok.on{display:block;}
+.rpill{background:rgba(0,212,170,.05);border:1px solid rgba(0,212,170,.16);border-radius:2px;padding:2px 6px;font-family:'JetBrains Mono',monospace;font-size:7.5px;color:var(--grn);cursor:pointer;}
+.rpill:hover{background:rgba(0,212,170,.11);}
+.rss-btns{display:flex;flex-wrap:wrap;gap:2px;margin-top:4px;}
+/* tabs cfg */
+.sz-row{display:flex;gap:3px;flex-wrap:wrap;margin-top:4px;}
+.sz-btn{font-family:'JetBrains Mono',monospace;font-size:8px;padding:3px 8px;border:1px solid var(--b1);border-radius:2px;color:var(--t2);cursor:pointer;transition:all .12s;}
+.sz-btn:hover,.sz-btn.on{color:var(--am);border-color:rgba(255,170,0,.35);background:var(--ag);}
+
+/* Deploy guide modal */
+.dep-box{background:var(--bg2);border:1px solid var(--b2);border-radius:4px;padding:24px;max-width:640px;width:92%;max-height:88vh;overflow-y:auto;}
+.dep-h{font-family:'Bebas Neue',sans-serif;font-size:26px;letter-spacing:3px;color:var(--am);margin-bottom:4px;}
+.dep-sub{font-family:'JetBrains Mono',monospace;font-size:8px;letter-spacing:1.5px;color:var(--t3);margin-bottom:18px;}
+.dep-sec{font-family:'Bebas Neue',sans-serif;font-size:15px;letter-spacing:2px;color:var(--t0);border-bottom:1px solid var(--b1);padding-bottom:3px;margin:14px 0 8px;}
+.dep-step{display:flex;gap:10px;margin-bottom:8px;align-items:flex-start;}
+.dep-n{font-family:'Bebas Neue',sans-serif;font-size:18px;color:var(--am);width:20px;flex-shrink:0;line-height:1;}
+.dep-tx{font-size:11.5px;color:var(--t1);line-height:1.6;}
+.dep-tx code{font-family:'JetBrains Mono',monospace;font-size:10px;background:var(--bg3);border:1px solid var(--b1);padding:1px 5px;border-radius:2px;color:var(--grn);}
+.dep-tx a{color:var(--am);}
+.dep-note{font-family:'JetBrains Mono',monospace;font-size:8px;padding:7px 10px;background:rgba(0,212,170,.05);border:1px solid rgba(0,212,170,.15);border-radius:2px;color:var(--grn);margin:6px 0;}
+
+/* about */
+.ab-box{background:var(--bg2);border:1px solid var(--b2);border-radius:4px;padding:24px 28px;max-width:500px;width:90%;max-height:80vh;overflow-y:auto;}
+
+/* tw cfg */
+.tw-handles-info{font-family:'JetBrains Mono',monospace;font-size:8px;color:var(--t3);line-height:1.6;margin-top:5px;}
+</style>
+</head>
+<body>
+
+<!-- TICKER -->
+<div class="ticker">
+  <div class="tk-flag"><div class="tk-dot"></div>WBIntel LIVE</div>
+  <div class="tk-sc"><div class="tk-in" id="tkIn">
+    <span class="ti r">BREAKING: Warehouse fire Burrabazar — 8 tenders deployed · Canning St blocked · no casualties confirmed</span>
+    <span class="ti b">SENSEX 80,847 +0.43% · Nifty 24,180 · Gold ₹71,420 · USD/INR 83.12 · Kolkata RE Index +1.2%</span>
+    <span class="ti">Tata Motors EV plant at Singur confirmed — ₹3,200 cr · 2,400 jobs · production from Q3 2026</span>
+    <span class="ti r">Hit-and-run EM Bypass Ruby — 2 dead, 3 critical · Kolkata PS FIR · CCTV review underway</span>
+    <span class="ti g">Metro Purple Line open — New Garia to Ruby · 14 stations · 1.8L daily riders</span>
+    <span class="ti">East Bengal vs Mohun Bagan Derby March 12 VYBK — 85,000 tickets sold in 6 hours</span>
+    <span class="ti">MoneyHops Kolkata raises $4.2M Series A · Infosys Sector V expands +1,200 seats</span>
+    <span class="ti r">BREAKING: Warehouse fire Burrabazar — 8 tenders deployed · Canning St blocked · no casualties confirmed</span>
+    <span class="ti b">SENSEX 80,847 +0.43% · Nifty 24,180 · Gold ₹71,420 · USD/INR 83.12 · Kolkata RE Index +1.2%</span>
+    <span class="ti">Tata Motors EV plant at Singur confirmed — ₹3,200 cr · 2,400 jobs · production from Q3 2026</span>
+    <span class="ti r">Hit-and-run EM Bypass Ruby — 2 dead, 3 critical · Kolkata PS FIR · CCTV review underway</span>
+    <span class="ti g">Metro Purple Line open — New Garia to Ruby · 14 stations · 1.8L daily riders</span>
+  </div></div>
+</div>
+
+<!-- HEADER -->
+<div class="hdr">
+  <div class="brand"><span class="b-wb">WB</span><span class="b-in">Intel</span><div class="b-sep"></div><span class="b-sub">West Bengal State Monitor · All Categories · Live · Open Source</span></div>
+  <div class="hdiv"></div>
+  <div class="hst"><div class="hv r" id="hCrime">48</div><div class="hl">Crime/Fire</div></div>
+  <div class="hdiv"></div>
+  <div class="hst"><div class="hv a" id="hPol">31</div><div class="hl">Politics</div></div>
+  <div class="hdiv"></div>
+  <div class="hst"><div class="hv b" id="hBiz">84</div><div class="hl">Biz/Finance</div></div>
+  <div class="hdiv"></div>
+  <div class="hst"><div class="hv" id="hTech">37</div><div class="hl">Tech/RE</div></div>
+  <div class="hdiv"></div>
+  <div class="hst"><div class="hv g" id="hSrc">120+</div><div class="hl">Sources</div></div>
+  <div class="hright">
+    <!-- Live weather in header -->
+    <div class="wx-hdr" id="wxHdr" title="Click to refresh location">
+      <span style="font-size:16px;" id="wxIcon">🌤</span>
+      <div>
+        <div class="wx-hv" id="wxTemp">--°</div>
+        <div class="wx-hd"><div class="wx-loc" id="wxLocName">detecting…</div><div id="wxDesc">--</div></div>
+      </div>
+    </div>
+    <div class="live-b"><div class="tk-dot"></div>LIVE</div>
+    <button class="hbtn hb-a" onclick="openAbout()">ℹ About</button>
+    <button class="hbtn hb-g" onclick="openDeploy()">🚀 Deploy</button>
+    <button class="hbtn hb-r" onclick="openCfg()">⚙ Config</button>
+    <div class="clk" id="clock">--:--:-- <em>IST</em></div>
+  </div>
+</div>
+
+<!-- MAIN -->
+<div class="main" id="mainGrid">
+
+  <!-- ═ COL 1: LIVE TV + TRAFFIC CAMS ═ -->
+  <div class="col" style="border-left:none;" id="col1">
+    <div class="ph"><div class="pt r">📺 Live TV · Bengali News</div><div class="badge br" id="tvBadge">CLICK TO LOAD</div></div>
+    <div class="cam-grid" id="camGrid">
+      <div class="cam-cell" id="cam1"><div class="cam-ph" onclick="loadCam(1,'UCKHDHDnBm_NQMR4wdHkU7OA','ABP Ananda')"><div style="font-size:15px">📺</div><div class="cam-nm">ABP<br>ANANDA</div><div class="cam-btn">▶ LIVE</div></div></div>
+      <div class="cam-cell" id="cam2"><div class="cam-ph" onclick="loadCam(2,'UCE1bAKD7LHJlhLoG5J7OLVQ','Zee 24 Ghanta')"><div style="font-size:15px">📺</div><div class="cam-nm">ZEE 24<br>GHANTA</div><div class="cam-btn">▶ LIVE</div></div></div>
+      <div class="cam-cell" id="cam3"><div class="cam-ph" onclick="loadCam(3,'UCHalYeLI3PkV9Tx6loQ_MmQ','News18 Bangla')"><div style="font-size:15px">📺</div><div class="cam-nm">NEWS18<br>BANGLA</div><div class="cam-btn">▶ LIVE</div></div></div>
+      <div class="cam-cell" id="cam4"><div class="cam-ph" onclick="loadCam(4,'UCHiYk7H9B7nFQT9qd_YDAKQ','Republic Bangla')"><div style="font-size:15px">📺</div><div class="cam-nm">REPUBLIC<br>BANGLA</div><div class="cam-btn">▶ LIVE</div></div></div>
+    </div>
+    <div class="ph"><div class="pt" style="color:var(--c-wx);">🚦 Traffic · Kolkata</div><div class="badge" style="background:rgba(255,213,79,.07);border:1px solid rgba(255,213,79,.2);color:#ffd54f;">LIVE</div></div>
+    <div class="traf-grid" id="trafGrid">
+      <div class="tc" id="tc1" onclick="loadTraf(1,'Howrah Bridge')"><div style="font-size:12px">🌉</div><div class="tc-nm">HOWRAH<br>BRIDGE</div><div class="tc-st slow" id="ts1">SLOW</div></div>
+      <div class="tc" id="tc2" onclick="loadTraf(2,'EM Bypass Ruby')"><div style="font-size:12px">🛣</div><div class="tc-nm">EM BYPASS<br>RUBY</div><div class="tc-st ok" id="ts2">CLEAR</div></div>
+      <div class="tc" id="tc3" onclick="loadTraf(3,'Vidyasagar Setu')"><div style="font-size:12px">🌉</div><div class="tc-nm">VIDYASAGAR<br>SETU</div><div class="tc-st slow" id="ts3">SLOW</div></div>
+      <div class="tc" id="tc4" onclick="loadTraf(4,'AJC Bose Rd')"><div style="font-size:12px">🚗</div><div class="tc-nm">AJC BOSE<br>ROAD</div><div class="tc-st block" id="ts4">BLOCKED</div></div>
+    </div>
+    <div class="ph"><div class="pt" style="color:var(--pur);">📡 More Channels</div></div>
+    <div class="sc ch-list" id="chList"></div>
+  </div>
+
+  <!-- ═ COL 2: MASTER FEED ═ -->
+  <div class="col" id="col2">
+    <div class="ph"><div class="pt" id="feedTitle">All News · West Bengal</div><div class="badge ba" id="feedBadge">0</div></div>
+    <div class="cat-pills" id="catPills">
+      <button class="cp on"  onclick="filterCat('all',this,'')">ALL</button>
+      <button class="cp r"   onclick="filterCat('crime',this,'r')" data-cat="crime">CRIME</button>
+      <button class="cp r"   onclick="filterCat('fire',this,'r')"  data-cat="fire">FIRE</button>
+      <button class="cp"     onclick="filterCat('pol',this,'')"    data-cat="pol">POLITICS</button>
+      <button class="cp b"   onclick="filterCat('biz',this,'b')"   data-cat="biz">BUSINESS</button>
+      <button class="cp g"   onclick="filterCat('fin',this,'g')"   data-cat="fin">FINANCE</button>
+      <button class="cp c"   onclick="filterCat('re',this,'c')"    data-cat="re">REAL ESTATE</button>
+      <button class="cp p"   onclick="filterCat('tech',this,'p')"  data-cat="tech">TECH</button>
+      <button class="cp pk"  onclick="filterCat('life',this,'pk')" data-cat="life">LIFESTYLE</button>
+      <button class="cp"     onclick="filterCat('sport',this,'')"  data-cat="sport">SPORTS</button>
+      <button class="cp"     onclick="filterCat('health',this,'')" data-cat="health">HEALTH</button>
+      <button class="cp"     onclick="filterCat('gov',this,'')"    data-cat="gov">GOVT</button>
+      <button class="cp"     onclick="filterCat('wx',this,'')"     data-cat="wx">WEATHER</button>
+    </div>
+    <div class="sc" id="masterFeed"></div>
+  </div>
+
+  <!-- ═ COL 3 CENTER: MAP + TWITTER + POLITICS ═ -->
+  <div class="col" id="col3" style="overflow:hidden;">
+
+    <!-- WB SVG MAP -->
+    <div class="map-wrap" id="mapWrap">
+      <div class="map-hdr">
+        <div class="map-title">🗺 West Bengal · Live Activity Map</div>
+        <div class="map-legend">
+          <div class="ml"><div class="ml-dot" style="background:var(--red)"></div>HIGH</div>
+          <div class="ml"><div class="ml-dot" style="background:var(--am)"></div>MED</div>
+          <div class="ml"><div class="ml-dot" style="background:var(--grn)"></div>LOW</div>
+        </div>
+      </div>
+      <svg id="wbMap" viewBox="0 0 230 390" xmlns="http://www.w3.org/2000/svg">
+        <!-- WB State Outline — stylized amber shape -->
+        <defs>
+          <filter id="glow"><feGaussianBlur stdDeviation="2" result="blur"/><feMerge><feMergeNode in="blur"/><feMergeNode in="SourceGraphic"/></feMerge></filter>
+          <radialGradient id="mapBg" cx="50%" cy="50%" r="50%">
+            <stop offset="0%" stop-color="rgba(255,170,0,0.04)"/>
+            <stop offset="100%" stop-color="rgba(0,0,0,0)"/>
+          </radialGradient>
+        </defs>
+        <rect width="230" height="390" fill="url(#mapBg)"/>
+        <!-- State outline - WB shape -->
+        <path d="M 60,28 L 80,20 L 110,18 L 148,22 L 168,38 L 172,58 L 160,72 L 145,80
+                 L 148,95 L 138,112 L 128,135 L 118,155 L 125,175 L 122,195 L 112,212
+                 L 118,228 L 130,245 L 142,268 L 148,290 L 144,310 L 138,330 L 128,352
+                 L 118,368 L 108,375 L 95,370 L 82,355 L 75,330 L 78,308 L 90,285
+                 L 85,265 L 72,248 L 68,228 L 62,210 L 52,192 L 42,175 L 40,158
+                 L 48,140 L 55,120 L 50,100 L 45,80 L 50,60 L 60,28 Z"
+          fill="rgba(255,170,0,0.035)" stroke="var(--am)" stroke-width="1" stroke-opacity="0.4"/>
+
+        <!-- District dots + labels — positioned approximately -->
+        <!-- id matches DIST_IDS array index -->
+        <g id="distDots">
+          <!-- 0 Darjeeling     --> <g class="dist-g" data-d="0"><circle cx="58"  cy="32"  r="4" fill="var(--am)" opacity=".7" class="dist-dot"/><text x="66"  y="36"  fill="var(--t2)" font-size="7" font-family="JetBrains Mono,monospace">Darjeeling</text></g>
+          <!-- 1 Kalimpong      --> <g class="dist-g" data-d="1"><circle cx="82"  cy="44"  r="3" fill="var(--am)" opacity=".6" class="dist-dot"/><text x="88"  y="48"  fill="var(--t2)" font-size="7" font-family="JetBrains Mono,monospace">Kalimpong</text></g>
+          <!-- 2 Jalpaiguri     --> <g class="dist-g" data-d="2"><circle cx="108" cy="36"  r="4" fill="var(--am)" opacity=".7" class="dist-dot"/><text x="114" y="40"  fill="var(--t2)" font-size="7" font-family="JetBrains Mono,monospace">Jalpaiguri</text></g>
+          <!-- 3 Alipurduar     --> <g class="dist-g" data-d="3"><circle cx="150" cy="32"  r="3" fill="var(--am)" opacity=".6" class="dist-dot"/><text x="154" y="36"  fill="var(--t2)" font-size="7" font-family="JetBrains Mono,monospace">Alipurduar</text></g>
+          <!-- 4 Cooch Behar    --> <g class="dist-g" data-d="4"><circle cx="158" cy="56"  r="4" fill="var(--am)" opacity=".7" class="dist-dot"/><text x="163" y="60"  fill="var(--t2)" font-size="7" font-family="JetBrains Mono,monospace">Cooch Behar</text></g>
+          <!-- 5 N Dinajpur     --> <g class="dist-g" data-d="5"><circle cx="138" cy="74"  r="4" fill="var(--am)" opacity=".7" class="dist-dot"/><text x="144" y="78"  fill="var(--t2)" font-size="7" font-family="JetBrains Mono,monospace">N.Dinajpur</text></g>
+          <!-- 6 S Dinajpur     --> <g class="dist-g" data-d="6"><circle cx="128" cy="98"  r="3" fill="var(--am)" opacity=".6" class="dist-dot"/><text x="134" y="102" fill="var(--t2)" font-size="7" font-family="JetBrains Mono,monospace">S.Dinajpur</text></g>
+          <!-- 7 Malda          --> <g class="dist-g" data-d="7"><circle cx="112" cy="120" r="4" fill="var(--am)" opacity=".7" class="dist-dot"/><text x="118" y="124" fill="var(--t2)" font-size="7" font-family="JetBrains Mono,monospace">Malda</text></g>
+          <!-- 8 Murshidabad    --> <g class="dist-g" data-d="8"><circle cx="100" cy="148" r="5" fill="var(--red)" opacity=".8" class="dist-dot"/><text x="106" y="152" fill="var(--t1)" font-size="7.5" font-family="JetBrains Mono,monospace">Murshidabad</text></g>
+          <!-- 9 Birbhum        --> <g class="dist-g" data-d="9"><circle cx="80"  cy="158" r="5" fill="var(--red)" opacity=".8" class="dist-dot"/><text x="86"  y="162" fill="var(--t1)" font-size="7.5" font-family="JetBrains Mono,monospace">Birbhum</text></g>
+          <!-- 10 Nadia         --> <g class="dist-g" data-d="10"><circle cx="118" cy="172" r="4" fill="var(--am)" opacity=".7" class="dist-dot"/><text x="124" y="176" fill="var(--t2)" font-size="7" font-family="JetBrains Mono,monospace">Nadia</text></g>
+          <!-- 11 Burdwan E     --> <g class="dist-g" data-d="11"><circle cx="104" cy="188" r="4" fill="var(--am)" opacity=".7" class="dist-dot"/><text x="108" y="192" fill="var(--t2)" font-size="7" font-family="JetBrains Mono,monospace">BurdwanE</text></g>
+          <!-- 12 Burdwan W     --> <g class="dist-g" data-d="12"><circle cx="82"  cy="198" r="4" fill="var(--am)" opacity=".7" class="dist-dot"/><text x="55"  y="202" fill="var(--t2)" font-size="7" font-family="JetBrains Mono,monospace">BurdwanW</text></g>
+          <!-- 13 Bankura       --> <g class="dist-g" data-d="13"><circle cx="68"  cy="215" r="3" fill="var(--am)" opacity=".6" class="dist-dot"/><text x="72"  y="219" fill="var(--t2)" font-size="7" font-family="JetBrains Mono,monospace">Bankura</text></g>
+          <!-- 14 Purulia       --> <g class="dist-g" data-d="14"><circle cx="48"  cy="220" r="3" fill="var(--am)" opacity=".6" class="dist-dot"/><text x="52"  y="224" fill="var(--t2)" font-size="7" font-family="JetBrains Mono,monospace">Purulia</text></g>
+          <!-- 15 Hooghly       --> <g class="dist-g" data-d="15"><circle cx="100" cy="210" r="4" fill="var(--am)" opacity=".7" class="dist-dot"/><text x="104" y="214" fill="var(--t2)" font-size="7" font-family="JetBrains Mono,monospace">Hooghly</text></g>
+          <!-- 16 Howrah        --> <g class="dist-g" data-d="16"><circle cx="96"  cy="236" r="4" fill="var(--am)" opacity=".7" class="dist-dot"/><text x="100" y="240" fill="var(--t2)" font-size="7" font-family="JetBrains Mono,monospace">Howrah</text></g>
+          <!-- 17 Kolkata       --> <g class="dist-g" data-d="17"><circle cx="110" cy="248" r="6" fill="var(--red)" opacity=".9" class="dist-dot" filter="url(#glow)"/><text x="116" y="252" fill="var(--am2)" font-size="8" font-weight="bold" font-family="JetBrains Mono,monospace">Kolkata</text></g>
+          <!-- 18 N 24 Pgs     --> <g class="dist-g" data-d="18"><circle cx="128" cy="232" r="5" fill="var(--red)" opacity=".85" class="dist-dot"/><text x="132" y="236" fill="var(--t1)" font-size="7" font-family="JetBrains Mono,monospace">N.24Pgs</text></g>
+          <!-- 19 Jhargram     --> <g class="dist-g" data-d="19"><circle cx="52"  cy="242" r="3" fill="var(--grn)" opacity=".6" class="dist-dot"/><text x="56"  y="246" fill="var(--t2)" font-size="7" font-family="JetBrains Mono,monospace">Jhargram</text></g>
+          <!-- 20 W Midnapore  --> <g class="dist-g" data-d="20"><circle cx="65"  cy="260" r="4" fill="var(--am)" opacity=".6" class="dist-dot"/><text x="69"  y="264" fill="var(--t2)" font-size="7" font-family="JetBrains Mono,monospace">W.Midnap</text></g>
+          <!-- 21 E Midnapore  --> <g class="dist-g" data-d="21"><circle cx="112" cy="272" r="4" fill="var(--am)" opacity=".7" class="dist-dot"/><text x="116" y="276" fill="var(--t2)" font-size="7" font-family="JetBrains Mono,monospace">E.Midnap</text></g>
+          <!-- 22 S 24 Pgs     --> <g class="dist-g" data-d="22"><circle cx="124" cy="295" r="5" fill="var(--red)" opacity=".8" class="dist-dot"/><text x="128" y="299" fill="var(--t1)" font-size="7" font-family="JetBrains Mono,monospace">S.24Pgs</text></g>
+        </g>
+        <!-- ping rings container -->
+        <g id="pingRings"></g>
+      </svg>
+    </div>
+
+    <!-- TWITTER EMBED -->
+    <div class="tw-wrap" style="flex:.9;overflow:hidden;" id="twWrap">
+      <div class="ph"><div class="pt" style="color:#1d9bf0;">🐦 Twitter · WB Live</div><div class="badge" style="background:rgba(29,155,240,.07);border:1px solid rgba(29,155,240,.22);color:#1d9bf0;" id="twBadge">CONFIGURE</div></div>
+      <div class="tw-inner sc" id="twContainer">
+        <div style="padding:8px;text-align:center;">
+          <div style="font-family:'JetBrains Mono',monospace;font-size:8px;color:var(--t3);line-height:1.7;padding:8px;">
+            Twitter feed requires your Twitter List ID.<br>
+            Go to <span style="color:#1d9bf0;">twitter.com</span> → Create a List<br>
+            Add: WBPolice · ABPAnanda · ZeeBangla<br>
+            Then paste list URL in ⚙ Config → Twitter<br><br>
+            <button onclick="openCfg()" style="font-family:'JetBrains Mono',monospace;font-size:8px;padding:4px 10px;background:rgba(29,155,240,.1);border:1px solid rgba(29,155,240,.25);color:#1d9bf0;border-radius:2px;cursor:pointer;">⚙ Configure Twitter</button>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- POLITICS FEED -->
+    <div style="display:flex;flex-direction:column;overflow:hidden;flex:1.1;">
+      <div class="ph"><div class="pt a">🏛 Politics · WB</div><div class="badge ba" id="polBadge">LIVE</div></div>
+      <div class="sc pol-feed" id="polFeed"></div>
+    </div>
+
+  </div>
+
+  <!-- ═ COL 4: CRIME LOOP + MULTI PANELS ═ -->
+  <div class="col" id="col4" style="overflow:hidden;">
+    <div style="display:flex;flex-direction:column;overflow:hidden;border-bottom:1px solid var(--b0);flex:1.1;">
+      <div class="ph"><div class="pt r">🚔 Crime · Police · Fire · Live</div><div class="badge br" id="cPolBadge">● AUTO</div></div>
+      <div class="sc" id="crimeLoop"></div>
+    </div>
+    <div style="display:flex;flex-direction:column;overflow:hidden;border-bottom:1px solid var(--b0);flex:.65;">
+      <div class="ph"><div class="pt g">📈 Markets · Finance</div><div class="badge bg" id="finBadge">IST</div></div>
+      <div class="sc" id="finPanel"></div>
+    </div>
+    <div style="display:flex;flex-direction:column;overflow:hidden;flex:1.1;">
+      <div class="ph"><div class="pt b">💼 Business · RE · Tech · Life</div><div class="badge bb" id="bizBadge">LIVE</div></div>
+      <div class="sc" id="bizPanel"></div>
+    </div>
+  </div>
+
+  <!-- ═ COL 5: WEATHER + DISTRICTS + SOURCES ═ -->
+  <div class="col" id="col5">
+    <!-- LIVE WEATHER (Open-Meteo) -->
+    <div class="ph"><div class="pt c">🌤 Live Weather</div><div class="badge bc">Open-Meteo</div></div>
+    <div class="wx-card" id="wxCard">
+      <div style="font-family:'JetBrains Mono',monospace;font-size:8px;color:var(--t3);text-align:center;padding:8px;">
+        Fetching your location…<br>
+        <button class="wx-loc-btn" style="margin-top:6px;" onclick="getWeather()">📍 Use My Location</button>
+      </div>
+    </div>
+
+    <!-- DISTRICTS -->
+    <div class="ph"><div class="pt a">📍 23 Districts</div><div class="badge ba">ACTIVITY</div></div>
+    <div class="sc" id="distPanel" style="flex:.9;"></div>
+
+    <!-- SOURCES -->
+    <div class="ph"><div class="pt g">📡 Sources</div><div class="badge bg" id="srcBadge">LIVE</div></div>
+    <div class="sc" id="srcPanel" style="flex:1;"></div>
+  </div>
+
+</div>
+
+<!-- BOTTOM BAR -->
+<div class="bbar">
+  <div class="bst"><span class="bsl">CRIME:</span><span class="bsv r" id="bCrime">48</span></div>
+  <div class="bdiv"></div>
+  <div class="bst"><span class="bsl">POL:</span><span class="bsv" id="bPol">31</span></div>
+  <div class="bdiv"></div>
+  <div class="bst"><span class="bsl">BIZ:</span><span class="bsv" id="bBiz">84</span></div>
+  <div class="bdiv"></div>
+  <div class="bst"><span class="bsl">TECH:</span><span class="bsv" id="bTech">37</span></div>
+  <div class="bdiv"></div>
+  <div class="bst"><span class="bsl">SRCS:</span><span class="bsv g" id="bSrc">120+</span></div>
+  <div class="bdiv"></div>
+  <div class="btx"><div class="btxt" id="bTxt">Initialising WBIntel State Monitor — All categories live · Crime · Politics · Business · Finance · Real Estate · Tech · Lifestyle · Sports · Health · Government · Weather</div></div>
+  <div class="bcred">WBIntel v6 · MIT · <a onclick="openAbout()">Konko Maji</a> · Open Source</div>
+</div>
+
+<!-- CONFIG PANEL -->
+<div class="ov" id="cfgOv" onclick="if(event.target===this)closeCfg()">
+  <div class="cfg-p">
+    <div class="cfg-h"><div class="cfg-t">⚙ Configure WBIntel</div><button class="cfg-x" onclick="closeCfg()">✕</button></div>
+    <div class="cfg-b">
+      <div class="cs">
+        <div class="cst">🌤 Weather</div>
+        <div class="cr"><div class="clbl">Open-Meteo <span>FREE · No key needed</span></div>
+          <button class="wx-loc-btn" onclick="getWeather()">📍 Detect My Location (Free, No API key)</button>
+        </div>
+        <div class="cr"><div class="clbl">Manual location override</div><input class="ci" id="cfg_wxloc" placeholder="e.g. Howrah, West Bengal" /></div>
+      </div>
+      <div class="cs">
+        <div class="cst">🐦 Twitter Widget <span style="font-family:'JetBrains Mono',monospace;font-size:8px;letter-spacing:0;color:var(--grn);">[FREE · Official]</span></div>
+        <div class="cr"><div class="clbl">Twitter List URL <span>twitter.com/i/lists/XXXXXXX</span></div>
+          <input class="ci" id="cfg_twlist" placeholder="https://twitter.com/i/lists/your-list-id">
+          <div class="tw-handles-info">
+            📋 How to set up (free):<br>
+            1. Go to twitter.com → create a new List<br>
+            2. Add accounts: @WBPolice @ABPAnandaTV @ZeeBangla @mamataofficial @BJP4Bengal @CPIMBengal @AITCofficial<br>
+            3. Copy the list URL and paste above<br>
+            4. Save & Apply — Twitter timeline will load here
+          </div>
+        </div>
+        <div class="cr"><div class="clbl">Or embed any Twitter profile URL</div>
+          <input class="ci" id="cfg_twprofile" placeholder="https://twitter.com/WBPolice">
+        </div>
+      </div>
+      <div class="cs">
+        <div class="cst">📡 RSS Feed Sources</div>
+        <div class="cr"><div class="clbl">Feed URLs <span>One per line</span></div>
+          <textarea class="ci" id="cfg_rss" placeholder="https://scroll.in/rss&#10;https://thewire.in/rss&#10;https://theprint.in/feed&#10;https://livelaw.in/feed&#10;https://www.telegraphindia.com/rss&#10;https://www.anandabazar.com/rss&#10;https://economictimes.indiatimes.com/rss&#10;https://www.ndtv.com/rss/bengal"></textarea>
+        </div>
+        <div class="rss-btns">
+          <button class="rpill" onclick="addRSS('https://scroll.in/rss')">+Scroll</button>
+          <button class="rpill" onclick="addRSS('https://thewire.in/rss')">+The Wire</button>
+          <button class="rpill" onclick="addRSS('https://theprint.in/feed')">+The Print</button>
+          <button class="rpill" onclick="addRSS('https://livelaw.in/feed')">+LiveLaw</button>
+          <button class="rpill" onclick="addRSS('https://www.telegraphindia.com/rss')">+Telegraph</button>
+          <button class="rpill" onclick="addRSS('https://economictimes.indiatimes.com/rss')">+ET</button>
+          <button class="rpill" onclick="addRSS('https://www.ndtv.com/rss/bengal')">+NDTV</button>
+          <button class="rpill" onclick="addRSS('https://article-14.com/feed')">+Article14</button>
+        </div>
+      </div>
+      <div class="cs">
+        <div class="cst">🔑 Optional API Keys</div>
+        <div class="cr"><div class="clbl">NewsAPI.org <span>newsapi.org · free 100req/day</span></div><input class="ci" id="cfg_newsapi" type="password" placeholder="Optional..."></div>
+        <div class="cr"><div class="clbl">RSS2JSON <span>rss2json.com · boosts rate limit</span></div><input class="ci" id="cfg_r2j" type="password" placeholder="Optional..."></div>
+      </div>
+      <div class="cs">
+        <div class="cst">📐 Panel Layout</div>
+        <div class="cr">
+          <div class="clbl">Column widths preset</div>
+          <div class="sz-row">
+            <button class="sz-btn on" onclick="applyLayout('default',this)">Default</button>
+            <button class="sz-btn" onclick="applyLayout('wide-feed',this)">Wide Feed</button>
+            <button class="sz-btn" onclick="applyLayout('wide-map',this)">Wide Map</button>
+            <button class="sz-btn" onclick="applyLayout('wide-analysis',this)">Wide Analysis</button>
+            <button class="sz-btn" onclick="applyLayout('compact',this)">Compact</button>
+          </div>
+        </div>
+        <div class="cr">
+          <div class="clbl">Custom column widths (CSS grid value)</div>
+          <input class="ci" id="cfg_cols" placeholder="188px 1fr 260px 1fr 188px" />
+          <button class="wx-loc-btn" style="margin-top:3px;" onclick="applyCustomCols()">Apply Custom Layout</button>
+        </div>
+      </div>
+      <div class="cs">
+        <div class="cst">⚙ Settings</div>
+        <div class="togrow"><span class="togl">Auto-refresh RSS (5 min)</span><button class="tog on" id="tog_rss" onclick="this.classList.toggle('on')"></button></div>
+        <div class="togrow"><span class="togl">WB keyword filter on RSS</span><button class="tog on" id="tog_kw" onclick="this.classList.toggle('on')"></button></div>
+        <div class="togrow"><span class="togl">Crime/Police live loop</span><button class="tog on" id="tog_pol" onclick="this.classList.toggle('on')"></button></div>
+        <div class="togrow"><span class="togl">Map district ping on news</span><button class="tog on" id="tog_map" onclick="this.classList.toggle('on')"></button></div>
+        <div class="togrow"><span class="togl">Finance ticker auto-update</span><button class="tog on" id="tog_fin" onclick="this.classList.toggle('on')"></button></div>
+        <div class="togrow"><span class="togl">Sound on critical alerts</span><button class="tog" id="tog_snd" onclick="this.classList.toggle('on')"></button></div>
+      </div>
+      <button class="cfg-btn" onclick="saveCfg()">SAVE & APPLY</button>
+      <button class="cfg-btn sec" onclick="exportCfg()">EXPORT CONFIG JSON</button>
+      <button class="cfg-btn sec" onclick="openDeploy()">🚀 DEPLOY GUIDE (GitHub + Netlify)</button>
+      <div class="cfg-ok" id="cfgOk">✓ Saved — applying settings…</div>
+    </div>
+  </div>
+</div>
+
+<!-- DEPLOY GUIDE MODAL -->
+<div class="ov center" id="depOv" onclick="if(event.target===this)closeDeploy()">
+  <div class="dep-box">
+    <div class="dep-h">🚀 Deploy WBIntel</div>
+    <div class="dep-sub">GITHUB → NETLIFY AUTO-DEPLOY SETUP GUIDE</div>
+    <div class="dep-note">✅ Total cost: ₹0/month forever · Auto-deploy on every push · Free SSL + CDN</div>
+
+    <div class="dep-sec">Step 1 — Create GitHub Repository</div>
+    <div class="dep-step"><div class="dep-n">1</div><div class="dep-tx">Go to <a href="https://github.com" target="_blank">github.com</a> → Sign in (or create free account) → Click <code>+ New repository</code></div></div>
+    <div class="dep-step"><div class="dep-n">2</div><div class="dep-tx">Name it <code>wbintel</code> → Set to <code>Public</code> → Click <code>Create repository</code></div></div>
+    <div class="dep-step"><div class="dep-n">3</div><div class="dep-tx">On your computer: Download this <code>index.html</code> file → Open the repository page → Click <code>Add file → Upload files</code></div></div>
+    <div class="dep-step"><div class="dep-n">4</div><div class="dep-tx">Drag and drop <code>index.html</code> into GitHub → Write commit message <code>initial deploy</code> → Click <code>Commit changes</code></div></div>
+
+    <div class="dep-sec">Step 2 — Connect Netlify (Auto-Deploy)</div>
+    <div class="dep-step"><div class="dep-n">1</div><div class="dep-tx">Go to <a href="https://app.netlify.com" target="_blank">app.netlify.com</a> → Sign up free with your GitHub account</div></div>
+    <div class="dep-step"><div class="dep-n">2</div><div class="dep-tx">Click <code>Add new site → Import an existing project → GitHub</code></div></div>
+    <div class="dep-step"><div class="dep-n">3</div><div class="dep-tx">Select your <code>wbintel</code> repository → Leave all build settings blank (it's plain HTML) → Click <code>Deploy site</code></div></div>
+    <div class="dep-step"><div class="dep-n">4</div><div class="dep-tx">In ~30 seconds your site is live at <code>random-name.netlify.app</code> → Go to <code>Site settings → Domain → Change site name</code> → rename to <code>wbintel.netlify.app</code></div></div>
+
+    <div class="dep-sec">Step 3 — Auto-Deploy (Push = Publish)</div>
+    <div class="dep-step"><div class="dep-n">✅</div><div class="dep-tx"><strong>Done!</strong> Now whenever you update <code>index.html</code> on GitHub, Netlify automatically re-deploys in ~15 seconds. Zero manual steps.</div></div>
+    <div class="dep-step"><div class="dep-n">→</div><div class="dep-tx">To update: GitHub → your repo → click <code>index.html</code> → pencil icon → edit → <code>Commit changes</code> → Netlify auto-updates live</div></div>
+
+    <div class="dep-sec">Step 4 — Custom Domain (Optional)</div>
+    <div class="dep-step"><div class="dep-n">1</div><div class="dep-tx">Free domain: Register <code>wbintel.rf.gd</code> or <code>wbintel.kesug.com</code> at <a href="https://www.infinityfree.net" target="_blank">infinityfree.net</a></div></div>
+    <div class="dep-step"><div class="dep-n">2</div><div class="dep-tx">Paid .in domain (~₹499/yr): Register at GoDaddy/BigRock → Netlify site settings → <code>Add custom domain</code> → add DNS records</div></div>
+
+    <div class="dep-note" style="margin-top:12px;">🔗 Your live site URL example: https://wbintel.netlify.app<br>📁 GitHub repo: github.com/yourusername/wbintel<br>🔄 Every git push → live in ~15 seconds</div>
+
+    <button onclick="closeDeploy()" style="margin-top:14px;background:var(--am);color:#000;border:none;border-radius:2px;padding:7px 22px;font-family:'Bebas Neue',sans-serif;font-size:15px;letter-spacing:2px;cursor:pointer;">GOT IT</button>
+  </div>
+</div>
+
+<!-- ABOUT -->
+<div class="ov center" id="abOv" onclick="if(event.target===this)closeAbout()">
+  <div class="ab-box">
+    <div style="font-family:'Bebas Neue',sans-serif;font-size:40px;letter-spacing:2px;"><span style="color:var(--am);">WB</span><span style="color:var(--t3);">Intel</span></div>
+    <div style="font-family:'JetBrains Mono',monospace;font-size:7px;letter-spacing:2px;color:var(--t3);margin-bottom:12px;">WEST BENGAL STATE MONITOR · v6.0 · MIT LICENSE</div>
+    <p style="font-size:12px;color:var(--t1);line-height:1.7;margin-bottom:10px;">Everything happening in West Bengal — live, in one screen. Crime, fire, police, politics, business, finance, real estate, tech startups, lifestyle, culture, sports, health, government, weather — every category, every district, every source. SVG map with blinking live news locations. Live Bengali TV. Traffic cams. Twitter feed. Open-Meteo weather.</p>
+    <div style="font-family:'JetBrains Mono',monospace;font-size:8px;color:var(--am);letter-spacing:1.5px;margin-bottom:4px;">DEVELOPED BY</div>
+    <div style="font-family:'Bebas Neue',sans-serif;font-size:26px;letter-spacing:1px;color:var(--t0);margin-bottom:12px;">Konko Maji</div>
+    <div style="display:flex;flex-wrap:wrap;gap:4px;margin-bottom:14px;">
+      <span style="font-family:'JetBrains Mono',monospace;font-size:7px;padding:2px 7px;background:var(--ag);border:1px solid var(--amd);color:var(--am);border-radius:2px;">MIT LICENSE</span>
+      <span style="font-family:'JetBrains Mono',monospace;font-size:7px;padding:2px 7px;background:rgba(0,212,170,.06);border:1px solid rgba(0,212,170,.16);color:var(--grn);border-radius:2px;">OPEN SOURCE · FREE</span>
+      <span style="font-family:'JetBrains Mono',monospace;font-size:7px;padding:2px 7px;background:var(--ag);border:1px solid var(--amd);color:var(--am);border-radius:2px;">13 CATEGORIES</span>
+      <span style="font-family:'JetBrains Mono',monospace;font-size:7px;padding:2px 7px;background:var(--ag);border:1px solid var(--amd);color:var(--am);border-radius:2px;">23 DISTRICTS · LIVE MAP</span>
+      <span style="font-family:'JetBrains Mono',monospace;font-size:7px;padding:2px 7px;background:rgba(0,212,170,.06);border:1px solid rgba(0,212,170,.16);color:var(--grn);border-radius:2px;">120+ SOURCES · NO ADS</span>
+      <span style="font-family:'JetBrains Mono',monospace;font-size:7px;padding:2px 7px;background:rgba(29,155,240,.07);border:1px solid rgba(29,155,240,.2);color:#1d9bf0;border-radius:2px;">TWITTER EMBED · FREE</span>
+      <span style="font-family:'JetBrains Mono',monospace;font-size:7px;padding:2px 7px;background:rgba(0,200,224,.06);border:1px solid rgba(0,200,224,.16);color:var(--cyn);border-radius:2px;">OPEN-METEO WEATHER · FREE</span>
+    </div>
+    <p style="font-size:10px;color:var(--t3);">Stack: Pure HTML · CSS · JS · Open-Meteo API · Twitter Embed · rss2json.com · YouTube embeds · Netlify · GitHub</p>
+    <button onclick="closeAbout()" style="margin-top:14px;background:var(--am);color:#000;border:none;border-radius:2px;padding:7px 20px;font-family:'Bebas Neue',sans-serif;font-size:14px;letter-spacing:2px;cursor:pointer;">CLOSE</button>
+  </div>
+</div>
+
+<script>
+'use strict';
+// ══════════════════════════════════════════════════════
+//  WBIntel State Monitor v6
+//  Developed by Konko Maji · MIT License · Open Source
+// ══════════════════════════════════════════════════════
+
+// ─── DISTRICT ID MAP (matches SVG data-d index) ───
+const DIST_IDS = [
+  'Darjeeling','Kalimpong','Jalpaiguri','Alipurduar','Cooch Behar',
+  'North Dinajpur','South Dinajpur','Malda','Murshidabad','Birbhum',
+  'Nadia','Burdwan East','Burdwan West','Bankura','Purulia',
+  'Hooghly','Howrah','Kolkata','North 24 Parganas','Jhargram',
+  'West Midnapore','East Midnapore','South 24 Parganas'
+];
+// map district name → svg index
+const DIST_MAP = {};
+DIST_IDS.forEach((d,i)=>{ DIST_MAP[d]=i; DIST_MAP[d.toLowerCase()]=i; });
+// partial matches
+const DIST_PARTIAL = [
+  ['n 24','North 24 Parganas'],['s 24','South 24 Parganas'],['24 pgs','North 24 Parganas'],
+  ['murshid','Murshidabad'],['birbhum','Birbhum'],['kolkata','Kolkata'],['howrah','Howrah'],
+  ['hooghly','Hooghly'],['nadia','Nadia'],['burdwan','Burdwan East'],['bankura','Bankura'],
+  ['purulia','Purulia'],['malda','Malda'],['siliguri','Darjeeling'],['darjeeling','Darjeeling'],
+  ['bidhannagar','North 24 Parganas'],['salt lake','North 24 Parganas'],['durgapur','Burdwan West'],
+  ['asansol','Burdwan West'],['nandigram','East Midnapore'],['haldia','East Midnapore'],
+  ['midnapore','West Midnapore'],['bhangar','South 24 Parganas'],['sandeshkhali','North 24 Parganas'],
+  ['barrackpore','North 24 Parganas'],['cooch','Cooch Behar'],['siliguri','Jalpaiguri'],
+  ['singur','Hooghly'],['tarakeswar','Hooghly'],['kharagpur','West Midnapore'],
+];
+
+function distFromText(txt) {
+  const lo = (txt||'').toLowerCase();
+  for (const [k,v] of DIST_PARTIAL) { if (lo.includes(k)) return v; }
+  for (const d of DIST_IDS) { if (lo.includes(d.toLowerCase())) return d; }
+  return null;
+}
+
+// ─── PING MAP ───
+function pingDistrict(distName, color='var(--am)') {
+  if (!document.getElementById('tog_map')?.classList.contains('on')) return;
+  const idx = DIST_MAP[distName] || DIST_MAP[(distName||'').toLowerCase()];
+  if (idx === undefined) return;
+  const dot = document.querySelector(`.dist-g[data-d="${idx}"] .dist-dot`);
+  if (!dot) return;
+  const cx = dot.getAttribute('cx');
+  const cy = dot.getAttribute('cy');
+  const pr = document.getElementById('pingRings');
+  const c = document.createElementNS('http://www.w3.org/2000/svg','circle');
+  c.setAttribute('cx',cx); c.setAttribute('cy',cy); c.setAttribute('r','4');
+  c.setAttribute('fill','none'); c.setAttribute('stroke',color); c.setAttribute('stroke-width','1.5');
+  c.setAttribute('opacity','1'); c.classList.add('ping-circle');
+  pr.appendChild(c);
+  // pulse the dot
+  dot.style.fill = color; dot.style.r = '7';
+  setTimeout(()=>{ dot.style.r=''; dot.style.fill=''; c.remove(); }, 900);
+}
+
+// ─── DATA ───
+const FINANCE = [
+  {n:'SENSEX',   v:80847, c:'+0.43%', d:'up', fmt:v=>Math.round(v).toLocaleString()},
+  {n:'NIFTY 50', v:24180, c:'+0.38%', d:'up', fmt:v=>Math.round(v).toLocaleString()},
+  {n:'NIFTY BNK',v:51240, c:'-0.12%', d:'dn', fmt:v=>Math.round(v).toLocaleString()},
+  {n:'USD/INR',  v:83.12, c:'-0.08%', d:'up', fmt:v=>v.toFixed(2)},
+  {n:'GOLD/10g', v:71420, c:'+0.22%', d:'up', fmt:v=>'₹'+Math.round(v).toLocaleString()},
+  {n:'CRUDE OIL',v:83.40, c:'-0.54%', d:'dn', fmt:v=>'$'+v.toFixed(2)},
+  {n:'MCX SILVER',v:84210,c:'+0.31%', d:'up', fmt:v=>'₹'+Math.round(v).toLocaleString()},
+  {n:'KOL RE IDX',v:4218, c:'+1.20%', d:'up', fmt:v=>v.toFixed(0)},
+];
+
+const DISTRICTS = [
+  {n:'North 24 Parganas',s:88,e:341,l:'hot'},
+  {n:'South 24 Parganas',s:84,e:298,l:'hot'},
+  {n:'Murshidabad',      s:82,e:279,l:'hot'},
+  {n:'Kolkata',          s:78,e:248,l:'hot'},
+  {n:'Birbhum',          s:76,e:221,l:'hot'},
+  {n:'East Midnapore',   s:74,e:196,l:'hot'},
+  {n:'Howrah',           s:68,e:162,l:'warm'},
+  {n:'North Dinajpur',   s:72,e:157,l:'warm'},
+  {n:'Hooghly',          s:58,e:131,l:'warm'},
+  {n:'Cooch Behar',      s:62,e:128,l:'warm'},
+  {n:'West Midnapore',   s:56,e:112,l:'warm'},
+  {n:'Nadia',            s:60,e:118,l:'warm'},
+  {n:'Malda',            s:64,e:134,l:'warm'},
+  {n:'Burdwan East',     s:48,e:91, l:'mild'},
+  {n:'Burdwan West',     s:54,e:106,l:'mild'},
+  {n:'Bankura',          s:42,e:81, l:'mild'},
+  {n:'Purulia',          s:38,e:74, l:'mild'},
+  {n:'South Dinajpur',   s:44,e:82, l:'mild'},
+  {n:'Jalpaiguri',       s:46,e:88, l:'mild'},
+  {n:'Darjeeling',       s:50,e:92, l:'warm'},
+  {n:'Alipurduar',       s:36,e:66, l:'cool'},
+  {n:'Jhargram',         s:32,e:58, l:'cool'},
+  {n:'Kalimpong',        s:28,e:48, l:'cool'},
+];
+
+const SOURCES = [
+  {sec:'Bengali TV / Print'},
+  {n:'ABP Ananda',     t:'TV·WEB',  st:'live',c:88},{n:'Zee 24 Ghanta',  t:'TV·WEB',  st:'live',c:74},
+  {n:'News18 Bangla',  t:'TV·WEB',  st:'live',c:62},{n:'Anandabazar',    t:'PRINT·WEB',st:'live',c:82},
+  {n:'Sangbad Pratidin',t:'PRINT',  st:'live',c:54},{n:'Republic Bangla',t:'TV',       st:'live',c:44},
+  {n:'Kolkata TV',     t:'TV',      st:'live',c:31},{n:'Ei Samay',       t:'PRINT·WEB',st:'live',c:48},
+  {sec:'National / Neutral'},
+  {n:'The Telegraph',  t:'PRINT·WEB',st:'live',c:38},{n:'Scroll.in',     t:'WEB·RSS', st:'live',c:24},
+  {n:'The Wire',       t:'WEB·RSS', st:'live',c:19},{n:'The Print',      t:'WEB·RSS', st:'live',c:22},
+  {n:'NDTV Bengal',    t:'TV·WEB',  st:'live',c:18},{n:'Article 14',     t:'WEB·RSS', st:'idle',c:16},
+  {sec:'Business / Finance'},
+  {n:'Economic Times', t:'WEB·RSS', st:'live',c:18},{n:'Business Std',   t:'WEB',     st:'live',c:14},
+  {n:'Mint',           t:'WEB·RSS', st:'live',c:12},{n:'Moneycontrol',   t:'WEB',     st:'idle',c:9},
+  {sec:'Tech / Startup'},
+  {n:'Inc42 (WB)',     t:'WEB',     st:'live',c:9}, {n:'YourStory WB',   t:'WEB',     st:'idle',c:7},
+  {sec:'Real Estate'},
+  {n:'99acres Kolkata',t:'WEB',     st:'live',c:8}, {n:'MagicBricks WB', t:'WEB',     st:'live',c:9},
+  {sec:'Police / Admin / Official'},
+  {n:'WBPolice Twitter',t:'OFFICIAL',st:'live',c:34},{n:'PIB Kolkata',   t:'GOVT',    st:'live',c:12},
+  {n:'IMD Kolkata',    t:'OFFICIAL',st:'live',c:14},{n:'EC West Bengal', t:'OFFICIAL',st:'live',c:8},
+  {sec:'Social / Hyperlocal'},
+  {n:'Kolkata Viral (FB)',t:'HYPER',st:'live',c:44},{n:'Howrah Khobor(FB)',t:'HYPER', st:'live',c:28},
+  {n:'Siliguri Live(TG)',t:'HYPER', st:'live',c:22},{n:'N.Bengal Xpress', t:'HYPER',  st:'idle',c:19},
+];
+
+const MORE_CH = [
+  {n:'ABP Ananda',     yid:'UCKHDHDnBm_NQMR4wdHkU7OA'},
+  {n:'Zee 24 Ghanta',  yid:'UCE1bAKD7LHJlhLoG5J7OLVQ'},
+  {n:'News18 Bangla',  yid:'UCHalYeLI3PkV9Tx6loQ_MmQ'},
+  {n:'Republic Bangla',yid:'UCHiYk7H9B7nFQT9qd_YDAKQ'},
+  {n:'Kolkata TV',     yid:'UCJqGGVMLlv_UIMK9JrCMa-w'},
+  {n:'NDTV India',     yid:'UCZFMm1mMw0F81Z37aaEzTUA'},
+  {n:'Aaj Tak',        yid:'UCt4t-jeY85JegMlZ-E5UWtA'},
+  {n:'Republic TV',    yid:'UCkoz87BQsESquLBxyxkHSlA'},
+  {n:'DD Bengal',      yid:'UCAGEj7WqP4xhBWvEuqjkIpQ'},
+];
+
+// ─── ALL NEWS ───
+const ALL_NEWS = [
+  {cat:'crime',src:'Kolkata Fire Brigade',  tag:'nt-crime',tl:'FIRE',     hl:'5-alarm warehouse fire Burrabazar — 8 tenders, Canning St blocked, no casualties',        loc:'Kolkata',      t:'3m'},
+  {cat:'crime',src:'Bidhannagar Police',    tag:'nt-crime',tl:'MURDER',   hl:'27-yr-old techie found dead in Salt Lake flat — foul play suspected, ACP on site',        loc:'N 24 Pgs',     t:'9m'},
+  {cat:'pol',  src:'Anandabazar',           tag:'nt-pol',  tl:'POLITICS', hl:'CM Mamata Banerjee announces ₹1,200 cr Duare Sarkar expansion — 23 new services added',   loc:'Kolkata',      t:'11m'},
+  {cat:'crime',src:'NH Traffic Police',     tag:'nt-crime',tl:'ACCIDENT', hl:'3 dead, 7 injured truck-bus collision on NH-12 near Burdwan — road closed 4km',           loc:'Burdwan W',    t:'28m'},
+  {cat:'pol',  src:'ABP Ananda',            tag:'nt-pol',  tl:'POLITICS', hl:'BJP state president accuses TMC of minority appeasement ahead of annual party meet',       loc:'Kolkata',      t:'32m'},
+  {cat:'biz',  src:'Economic Times',        tag:'nt-biz',  tl:'INDUSTRY', hl:'Tata Motors confirms EV plant at Singur — ₹3,200 cr, 2,400 direct jobs, Q3 2026 ops',     loc:'Hooghly',      t:'12m'},
+  {cat:'fin',  src:'Moneycontrol',          tag:'nt-fin',  tl:'MARKETS',  hl:'SENSEX crosses 80,800 — ITC, DLF, HUDCO surge on FII inflows; Bengal stocks lead',        loc:'Mumbai/Kol',   t:'30m'},
+  {cat:'re',   src:'99acres',               tag:'nt-re',   tl:'PROPERTY', hl:'Rajarhat flat prices up 18% YoY — 2BHK avg ₹68L, New Town vacancy 4-yr low',              loc:'N 24 Pgs',     t:'31m'},
+  {cat:'tech', src:'Inc42',                 tag:'nt-tech', tl:'FUNDING',  hl:'Kolkata fintech MoneyHops raises $4.2M Series A — MSME cross-border payments',            loc:'Kolkata',      t:'23m'},
+  {cat:'life', src:'Anandabazar',           tag:'nt-life', tl:'CULTURE',  hl:'KIFF 2026 announces 150 films from 52 countries — opens Nov 8, Nandan & Rabindra Sadan',  loc:'Kolkata',      t:'1h 18m'},
+  {cat:'sport',src:'Calcutta Football',     tag:'nt-sport',tl:'DERBY',    hl:'East Bengal vs Mohun Bagan Derby confirmed March 12 VYBK — 85K tickets sold in 6 hrs',   loc:'Kolkata',      t:'41m'},
+  {cat:'health',src:'WB Health Dept',       tag:'nt-hlth', tl:'OUTBREAK', hl:'Dengue spike 34% in North 24 Pgs — 200 rapid response teams deployed across 8 blocks',   loc:'N 24 Pgs',     t:'46m'},
+  {cat:'gov',  src:'PIB Kolkata',           tag:'nt-gov',  tl:'INFRA',    hl:'Metro Purple Line open — New Garia to Ruby, 14 stations, daily 1.8L riders',              loc:'Kolkata',      t:'19m'},
+  {cat:'wx',   src:'IMD Kolkata',           tag:'nt-wx',   tl:'ALERT',    hl:'Yellow alert coastal WB — Bay of Bengal depression tracking, heavy rain 3 districts',      loc:'Coastal WB',   t:'36m'},
+  {cat:'pol',  src:'Scroll.in',             tag:'nt-pol',  tl:'POLITICS', hl:'Left-Congress seat-sharing talks resume — 80 seats under discussion, senior leaders meet', loc:'Kolkata',      t:'55m'},
+  {cat:'biz',  src:'Business Standard',     tag:'nt-biz',  tl:'LOGISTICS',hl:'Amazon opens 6th WB fulfilment centre near Tarakeswar — 1,800 jobs, ops from April',       loc:'Hooghly',      t:'48m'},
+  {cat:'fire', src:'WB Fire Brigade',       tag:'nt-fire', tl:'FIRE',     hl:'Chemical store fire Khidirpur Dock — controlled 90 min, ₹18L damage, no injuries',        loc:'Kolkata',      t:'44m'},
+  {cat:'crime',src:'SP Murshidabad',        tag:'nt-crime',tl:'DRUGS',    hl:'3 held NDPS at Berhampore station — 2.4 kg brown sugar seized, inter-state network',      loc:'Murshidabad',  t:'1h 4m'},
+  {cat:'re',   src:'WB Housing Board',      tag:'nt-re',   tl:'HOUSING',  hl:'4,800-unit affordable housing lottery at Rajarhat — Bangla Awas Yojana, opens March 20',  loc:'N 24 Pgs',     t:'1h 8m'},
+  {cat:'tech', src:'NASSCOM',               tag:'nt-tech', tl:'EXPANSION',hl:'Infosys Sector V expands +1,200 seats; Wipro SLT +800; Cognizant WB hiring 600',          loc:'Kolkata',      t:'58m'},
+  {cat:'pol',  src:'The Wire',              tag:'nt-pol',  tl:'POLITICS', hl:'ISF announces 22-seat solo contest in South Bengal — Abbas Siddiqui holds press conf',     loc:'S 24 Pgs',     t:'1h 12m'},
+  {cat:'health',src:'SSKM Hospital',        tag:'nt-hlth', tl:'MEDICAL',  hl:'Bengal\'s first robotic kidney transplant at SSKM — 12-hr op, patient stable',            loc:'Kolkata',      t:'1h 54m'},
+  {cat:'fin',  src:'Economic Times',        tag:'nt-fin',  tl:'IPO',      hl:'Kolkata logistics co Trident Freight files DRHP for ₹420 cr IPO — NSE listing planned',   loc:'Kolkata',      t:'1h 22m'},
+  {cat:'crime',src:'Howrah Police',         tag:'nt-crime',tl:'ARMS',     hl:'Illegal arms cache recovered Domjur abandoned building — 4 pipe guns, 200 rounds',        loc:'Howrah',       t:'1h 18m'},
+  {cat:'pol',  src:'ABP Ananda',            tag:'nt-pol',  tl:'GOVT',     hl:'WB cabinet approves Lakshmir Bhandar revision — beneficiary count crosses 2.1 crore',      loc:'Kolkata',      t:'1h 38m'},
+  {cat:'sport',src:'AIFF Bengal',           tag:'nt-sport',tl:'FOOTBALL', hl:'Mohun Bagan 2-1 Gokulam Kerala — Petratos brace seals ISL top spot, AFC Cup near',       loc:'Kolkata',      t:'1h 28m'},
+  {cat:'biz',  src:'Mint',                  tag:'nt-biz',  tl:'PORT',     hl:'Kolkata Port handles record 1.2L TEUs in Feb — 18% YoY growth, berth 8 expansion begins', loc:'Kolkata',      t:'1h 44m'},
+  {cat:'wx',   src:'IMD Kolkata',           tag:'nt-wx',   tl:'AQI',      hl:'Kolkata AQI 68 Moderate · Asansol 112 Unhealthy · Durgapur 88 — sensitive groups advisory',loc:'Multiple',     t:'2h'},
+  {cat:'gov',  src:'PIB Kolkata',           tag:'nt-gov',  tl:'SCHEME',   hl:'Centre releases ₹2,400 cr PMAY-Urban for WB — 48,000 units to be constructed by 2027',    loc:'State Wide',   t:'1h 6m'},
+  {cat:'life', src:'The Telegraph',         tag:'nt-life', tl:'FOOD',     hl:'Park Street restaurant strip 60 years — 42 new outlets opening 2026, economy ₹2,800 cr',  loc:'Kolkata',      t:'2h 32m'},
+];
+
+// ─── POLITICS DATA ───
+const POL_DATA_F = [
+  {src:'ABP ANANDA',  type:'CABINET',   tx:'WB cabinet revises Lakshmir Bhandar — 2.1 crore beneficiaries, ₹500/month for general, ₹1000 for SC/ST', loc:'Kolkata',       t:'11m'},
+  {src:'SCROLL.IN',   type:'POLITICS',  tx:'Left-Congress alliance seat talks resume in Kolkata — 80 seats under discussion, CPIM state sec meeting',   loc:'Kolkata',       t:'55m'},
+  {src:'THE WIRE',    type:'ISF',       tx:'ISF announces solo contest 22 seats South Bengal — Abbas Siddiqui holds press conference, no alliance deal', loc:'S 24 Pgs',      t:'1h 12m'},
+  {src:'ABP ANANDA',  type:'BJP',       tx:'BJP state president holds rally Cooch Behar — criticises TMC on border issue, 8K crowd, CRPF deployment',    loc:'Cooch Behar',   t:'1h 38m'},
+  {src:'ANANDABAZAR', type:'TMC',       tx:'CM Mamata announces Duare Sarkar expansion — 23 new services, ₹1,200 cr allocation, rollout from April 1',   loc:'Kolkata',       t:'11m'},
+  {src:'THE PRINT',   type:'CENTRE',    tx:'Centre-State friction: WB rejects CAA implementation order — Mamata writes to PM citing state prerogatives',  loc:'Kolkata/Delhi', t:'2h 4m'},
+  {src:'SCROLL.IN',   type:'CPIM',      tx:'CPIM central committee meets — Bengal strategy, candidate selection criteria, youth mobilisation discussed',  loc:'Kolkata',       t:'2h 38m'},
+  {src:'NEWS18',      type:'PANCHAYAT', tx:'WB panchayat election preparation — BDO offices directed to update voter rolls, 3-phase schedule proposed',  loc:'State Wide',    t:'3h 12m'},
+];
+
+// ─── CRIME LOOP ───
+const CRIME_DATA = [
+  {cls:'crit',src:'KOLKATA POLICE',    type:'FIRE',    tx:'Burrabazar warehouse fire — 8 tenders, Canning St to Brabourne Rd blocked. EOW on scene.',          loc:'Kolkata · Burrabazar',  t:'3m'},
+  {cls:'crit',src:'BIDHANNAGAR PS',    type:'MURDER',  tx:'Male found dead in Salt Lake Sector III flat — knife wounds, locked inside. ACP briefed.',          loc:'N 24 Pgs · Salt Lake',  t:'9m'},
+  {cls:'norm',src:'NH TRAFFIC POLICE', type:'ACCIDENT',tx:'3 dead NH-12 near Burdwan — truck/bus collision. 4km closed, diversion via Khandaghosh.',            loc:'Burdwan W · NH-12',     t:'28m'},
+  {cls:'norm',src:'SP MURSHIDABAD',    type:'DRUGS',   tx:'2.4 kg brown sugar Berhampore Station — 3 arrested, inter-state supply route suspected.',            loc:'Murshidabad',           t:'42m'},
+  {cls:'info',src:'WB FIRE BRIGADE',   type:'FIRE',    tx:'Khidirpur chemical store — controlled 90 min. Hazmat decontamination. No civilian injury.',          loc:'Kolkata · Khidirpur',   t:'44m'},
+  {cls:'norm',src:'HOWRAH PS',         type:'ARMS',    tx:'4 pipe guns + 200 rounds, Domjur abandoned building — 3 detained, SP alerted.',                     loc:'Howrah · Domjur',       t:'1h 2m'},
+  {cls:'info',src:'KOLKATA TRAFFIC',   type:'VIP',     tx:'CM convoy — AJC Bose Rd from Esplanade to Park St, ~25 min delay. Alt: Park Circus flyover.',        loc:'Kolkata · AJC Bose Rd', t:'1h 16m'},
+  {cls:'norm',src:'GRP KOLKATA',       type:'ROBBERY', tx:'Gold ornaments ₹8L snatched Howrah Stn platform 12 — 3-man gang on bikes. CCTV footage shared.',   loc:'Howrah · Station',      t:'1h 32m'},
+];
+
+// ─── BIZ MIX ───
+const BIZ_MIX = [
+  {cls:'',   src:'ECONOMIC TIMES',    type:'INDUSTRY', tag:'b2t-biz',  tx:'Tata Motors Singur EV plant — ₹3,200 cr, 2,400 jobs, assembly line ops Q3 2026',             loc:'Hooghly · Singur'},
+  {cls:'re', src:'MAGICBRICKS',       type:'PROPERTY', tag:'b2t-re',   tx:'Rajarhat 2BHK avg ₹68L, up 18% YoY — New Town vacancy 4-yr low, IT park demand',             loc:'N 24 Pgs · NT'},
+  {cls:'tech',src:'INC42',            type:'STARTUP',  tag:'b2t-tech', tx:'MoneyHops $4.2M Series A — MSME cross-border fintech, 80K users, expanding N Bengal',         loc:'Kolkata · Sector V'},
+  {cls:'fin', src:'MONEYCONTROL',     type:'MARKETS',  tag:'b2t-fin',  tx:'SENSEX 80,847 +0.43% — ITC +2.1%, HUDCO +3.4%, Bengal-linked FII buying spree',               loc:'BSE · Kolkata'},
+  {cls:'',   src:'BUSINESS STANDARD', type:'LOGISTICS',tag:'b2t-biz',  tx:'Amazon WB FC-6 Tarakeswar — 1,800 jobs, 180K sqft, last-mile network expansion April',       loc:'Hooghly · Tarak.'},
+  {cls:'tech',src:'NASSCOM',          type:'IT',       tag:'b2t-tech', tx:'Infosys Sector V +1,200 seats; Wipro SLT +800; Cognizant 600 — Bengal IT corridor expands',   loc:'Kolkata · Sector V'},
+  {cls:'re', src:'WB HOUSING BOARD',  type:'HOUSING',  tag:'b2t-re',   tx:'4,800-unit lottery Bangla Awas Yojana — Rajarhat, NT. Application opens March 20',           loc:'N 24 Pgs · NT'},
+  {cls:'life',src:'CALCUTTA FOOTBALL',type:'DERBY',    tag:'b2t-life', tx:'EB vs MB Derby March 12 VYBK — 85K tickets, all sold. ₹40 cr broadcast deal confirmed',      loc:'Kolkata · VYBK'},
+  {cls:'fin', src:'ECONOMIC TIMES',   type:'IPO',      tag:'b2t-fin',  tx:'Trident Freight DRHP filed — ₹420 cr IPO, Kolkata logistics, NSE listing Q2 2026',            loc:'Kolkata'},
+  {cls:'',   src:'MINT',              type:'PORT',     tag:'b2t-biz',  tx:'Kolkata Port record 1.2L TEUs Feb — 18% YoY, berth 8 expansion ₹620 cr begins',               loc:'Kolkata · KoPT'},
+];
+
+// ─── WEATHER CODES ───
+const WX_CODES = {0:'Clear ☀️',1:'Mostly Clear 🌤',2:'Partly Cloudy ⛅',3:'Overcast ☁️',45:'Foggy 🌫',48:'Icy Fog',51:'Light Drizzle 🌦',61:'Light Rain 🌧',63:'Moderate Rain 🌧',65:'Heavy Rain 🌧',80:'Rain Showers 🌦',95:'Thunderstorm ⛈',96:'Hail Storm ⛈'};
+const WX_ICONS = {0:'☀️',1:'🌤',2:'⛅',3:'☁️',45:'🌫',51:'🌦',61:'🌧',63:'🌧',65:'🌧',80:'🌦',95:'⛈',96:'⛈'};
+
+// ─── OPEN-METEO WEATHER ───
+async function getWeather() {
+  if (!navigator.geolocation) { showWxError('Geolocation not supported'); return; }
+  document.getElementById('wxCard').innerHTML = '<div style="padding:10px;font-family:JetBrains Mono,monospace;font-size:8px;color:var(--t3);text-align:center;">📍 Requesting location…</div>';
+  navigator.geolocation.getCurrentPosition(async pos => {
+    const {latitude:lat, longitude:lon} = pos.coords;
+    try {
+      const url = `https://api.open-meteo.com/v1/forecast?latitude=${lat}&longitude=${lon}&current=temperature_2m,relative_humidity_2m,wind_speed_10m,wind_direction_10m,weather_code,apparent_temperature,precipitation&timezone=Asia/Kolkata`;
+      const r = await fetch(url);
+      const d = await r.json();
+      const c = d.current;
+      const code = c.weather_code;
+      const desc = WX_CODES[code] || 'Fair';
+      const icon = WX_ICONS[code] || '🌤';
+      // reverse geocode with open-meteo nominatim
+      let locName = `${lat.toFixed(2)}°N`;
+      try {
+        const gr = await fetch(`https://nominatim.openstreetmap.org/reverse?lat=${lat}&lon=${lon}&format=json`);
+        const gd = await gr.json();
+        locName = gd.address?.city || gd.address?.town || gd.address?.village || gd.address?.county || locName;
+      } catch(e){}
+      renderWeather({temp:c.temperature_2m, feels:c.apparent_temperature, desc, icon, hum:c.relative_humidity_2m, wind:c.wind_speed_10m, city:locName});
+      // header mini widget
+      document.getElementById('wxIcon').textContent = icon;
+      document.getElementById('wxTemp').textContent = Math.round(c.temperature_2m)+'°';
+      document.getElementById('wxLocName').textContent = locName;
+      document.getElementById('wxDesc').textContent = desc.replace(/[^\w\s°]/g,'').trim();
+    } catch(e) { showWxError('Weather fetch failed'); }
+  }, () => showWxError('Location denied — click to retry'));
+}
+
+function renderWeather({temp,feels,desc,icon,hum,wind,city}) {
+  document.getElementById('wxCard').innerHTML = `
+    <div class="wx-city-name">📍 ${city}</div>
+    <div class="wx-row1 mt-2">
+      <div class="wx-big">${Math.round(temp)}°</div>
+      <div style="margin-left:4px;"><div style="font-size:22px;">${icon}</div></div>
+    </div>
+    <div class="wx-cond">${desc}</div>
+    <div class="wx-details">
+      <div class="wx-d"><div class="wx-dl">FEELS</div><div class="wx-dv">${Math.round(feels)}°C</div></div>
+      <div class="wx-d"><div class="wx-dl">HUMIDITY</div><div class="wx-dv">${hum}%</div></div>
+      <div class="wx-d"><div class="wx-dl">WIND</div><div class="wx-dv">${wind}km/h</div></div>
+      <div class="wx-d"><div class="wx-dl">UPDATED</div><div class="wx-dv" id="wxTime">${new Date().toLocaleTimeString('en-IN',{timeZone:'Asia/Calcutta',hour:'2-digit',minute:'2-digit'})}</div></div>
+    </div>
+    <button class="wx-loc-btn" onclick="getWeather()">🔄 Refresh</button>`;
+}
+
+function showWxError(msg) {
+  document.getElementById('wxCard').innerHTML = `<div style="padding:8px;font-family:'JetBrains Mono',monospace;font-size:8px;color:var(--t3);text-align:center;">${msg}<br><button class="wx-loc-btn" style="margin-top:5px;" onclick="getWeather()">📍 Use My Location</button></div>`;
+}
+
+// ─── TWITTER EMBED ───
+function loadTwitter(url) {
+  if (!url) return;
+  const tc = document.getElementById('twContainer');
+  const isProfile = url.includes('twitter.com/') && !url.includes('/lists/');
+  const embedUrl = isProfile ? url : url;
+  tc.innerHTML = `<a class="twitter-timeline" data-theme="dark" data-chrome="noheader nofooter noborders" data-tweet-limit="5" href="${embedUrl}">Loading tweets…</a>`;
+  const s = document.createElement('script'); s.src = 'https://platform.twitter.com/widgets.js';
+  s.async = true; tc.appendChild(s);
+  document.getElementById('twBadge').textContent = 'LIVE';
+}
+
+// ─── BUILD FUNCTIONS ───
+function buildCrimeLoop() {
+  const el = document.getElementById('crimeLoop'); el.innerHTML = '';
+  CRIME_DATA.forEach(p => {
+    const d = document.createElement('div'); d.className = `pi ${p.cls}`;
+    d.innerHTML = `<div class="pm"><span class="psrc">${p.src}</span><span class="ptyp">${p.type}</span><span class="ptm">${p.t} ago</span></div><div class="ptx">${p.tx}</div><div class="ploc">📍 <b>${p.loc}</b></div>`;
+    el.appendChild(d);
+  });
+}
+
+function buildPolFeed() {
+  document.getElementById('polFeed').innerHTML = POL_DATA_F.map(p =>
+    `<div class="pol-item">
+      <div class="pol-meta"><span class="pol-src">${p.src}</span><span class="pol-tag">${p.type}</span><span class="pol-time">${p.t} ago</span></div>
+      <div class="pol-tx">${p.tx}</div>
+      <div class="pol-loc">📍 <b>${p.loc}</b></div>
+    </div>`
+  ).join('');
+}
+
+function buildFinance() {
+  document.getElementById('finPanel').innerHTML = FINANCE.map(f =>
+    `<div class="fin-row">
+      <div class="fin-nm">${f.n}</div>
+      <div class="fin-v">${f.fmt(f.v)}</div>
+      <div class="fin-c fin-${f.d}">${f.c}</div>
+    </div>`
+  ).join('');
+  const ist = new Date(new Date().toLocaleString('en-US',{timeZone:'Asia/Calcutta'}));
+  document.getElementById('finBadge').textContent = String(ist.getHours()).padStart(2,'0')+':'+String(ist.getMinutes()).padStart(2,'0');
+}
+
+function buildBizPanel() {
+  document.getElementById('bizPanel').innerHTML = BIZ_MIX.map(b =>
+    `<div class="bc2 ${b.cls}">
+      <div class="b2m"><span class="b2s">${b.src}</span><span class="b2t ${b.tag}">${b.type}</span><span class="b2tm">LIVE</span></div>
+      <div class="b2hl">${b.tx}</div>
+      <div class="b2l">📍 <b>${b.loc}</b></div>
+    </div>`
+  ).join('');
+}
+
+function buildDists() {
+  document.getElementById('distPanel').innerHTML = DISTRICTS.map((d,i) =>
+    `<div class="dist-row ${d.l}" title="${d.n} · Activity ${d.s} · Events ${d.e}" onclick="pingDistrict('${d.n}')">
+      <div class="d-rk">${String(i+1).padStart(2,'0')}</div>
+      <div class="d-nm">${d.n}</div>
+      <div class="d-sc">${d.s}</div>
+      <div class="d-ev">${d.e}ev</div>
+    </div>`
+  ).join('');
+}
+
+function buildSources() {
+  const sp = document.getElementById('srcPanel'); sp.innerHTML = '';
+  let live=0;
+  SOURCES.forEach(s => {
+    if (s.sec) { sp.innerHTML += `<div class="src-sec">${s.sec}</div>`; return; }
+    if (s.st==='live') live++;
+    const d=document.createElement('div'); d.className='src-row';
+    d.innerHTML=`<div class="s-dot ${s.st==='live'?'live':s.st==='idle'?'idle':'off'}"></div><div class="s-nm">${s.n}</div><div class="s-ty">${s.t}</div><div class="s-cn">${s.c}</div>`;
+    sp.appendChild(d);
+  });
+  const tag=live+'+';
+  document.getElementById('hSrc').textContent=tag;
+  document.getElementById('bSrc').textContent=tag;
+  document.getElementById('srcBadge').textContent=tag+' LIVE';
+}
+
+function buildMoreChannels() {
+  document.getElementById('chList').innerHTML = MORE_CH.map(ch =>
+    `<div class="ch-row"><span style="font-size:13px;">📺</span><span class="ch-nm">${ch.n}</span><button class="ch-go" onclick="window.open('https://www.youtube.com/channel/${ch.yid}/live','_blank')">▶ LIVE</button></div>`
+  ).join('');
+}
+
+// ─── MASTER FEED ───
+let activeCat='all', feedCount=0;
+function ncHTML(d){
+  return `<div class="nm"><span class="n-src">${d.src}</span><span class="n-tag ${d.tag}">${d.tl}</span><span class="n-time">${d.t} ago</span></div><div class="n-hl">${d.hl}</div><div class="n-meta"><div class="n-loc">📍 <b>${d.loc}</b></div></div>`;
+}
+function buildFeed(){
+  const f=document.getElementById('masterFeed'); f.innerHTML=''; feedCount=0;
+  ALL_NEWS.filter(d=>activeCat==='all'||d.cat===activeCat).forEach(d=>{
+    const el=document.createElement('div'); el.className=`nc ${d.cat}`;
+    el.innerHTML=ncHTML(d); f.appendChild(el); feedCount++;
+  });
+  document.getElementById('feedBadge').textContent=feedCount;
+}
+function filterCat(cat,btn,clr){
+  activeCat=cat;
+  document.querySelectorAll('#catPills .cp').forEach(b=>{b.className='cp'+(b.dataset.cat===cat?' on '+(clr||''):'');});
+  if(!btn.dataset.cat) btn.className='cp on';
+  document.getElementById('feedTitle').textContent=cat==='all'?'All News · West Bengal':cat.charAt(0).toUpperCase()+cat.slice(1)+' · West Bengal';
+  buildFeed();
+}
+
+// ─── TV/CAM LOADERS ───
+function loadCam(n,yid,name){
+  const el=document.getElementById('cam'+n);
+  el.innerHTML=`<iframe src="https://www.youtube.com/embed/live_stream?channel=${yid}&autoplay=1&mute=1" allow="autoplay;encrypted-media" allowfullscreen loading="lazy" style="width:100%;height:100%;border:none;"></iframe><div class="cam-ov"><div class="cam-live"></div>${name}</div>`;
+  document.getElementById('tvBadge').textContent='STREAMING';
+}
+const TRAF_YIDS=['UCKHDHDnBm_NQMR4wdHkU7OA','UCE1bAKD7LHJlhLoG5J7OLVQ','UCHalYeLI3PkV9Tx6loQ_MmQ','UCHiYk7H9B7nFQT9qd_YDAKQ'];
+function loadTraf(n,name){
+  const el=document.getElementById('tc'+n); el.classList.add('loaded');
+  el.innerHTML=`<iframe src="https://www.youtube.com/embed/live_stream?channel=${TRAF_YIDS[n-1]}&autoplay=1&mute=1" allow="autoplay" allowfullscreen loading="lazy" style="position:absolute;inset:0;width:100%;height:100%;border:none;"></iframe><div class="cam-ov"><div class="cam-live"></div>${name}</div>`;
+}
+
+// ─── CLOCK ───
+function tick(){
+  const ist=new Date(new Date().toLocaleString('en-US',{timeZone:'Asia/Calcutta'}));
+  const p=n=>String(n).padStart(2,'0');
+  document.getElementById('clock').innerHTML=`${p(ist.getHours())}:${p(ist.getMinutes())}:${p(ist.getSeconds())} <em>IST</em>`;
+}
+setInterval(tick,1000); tick();
+
+// ─── FINANCE LIVE UPDATE ───
+setInterval(()=>{
+  FINANCE.forEach(f=>{
+    const d=(Math.random()-.48)*(f.v>1000?f.v*.0003:f.v*.0004);
+    f.v=Math.max(.01,f.v+d);
+    const pct=(d/f.v*100).toFixed(2);
+    f.c=(d>0?'+':'')+pct+'%'; f.d=d>0?'up':'dn';
+  });
+  buildFinance();
+},28000);
+
+// ─── DISTRICT PULSE ───
+setInterval(()=>{
+  DISTRICTS.forEach(d=>{d.s=Math.max(10,Math.min(99,d.s+(Math.random()>.5?1:-1)));d.e+=Math.floor(Math.random()*2);});
+  buildDists();
+},22000);
+
+// ─── AUTO LIVE FEED ───
+const LIVE_ITEMS=[
+  {cat:'crime',src:'KOLKATA POLICE',   tag:'nt-crime',tl:'ALERT',    hl:'Bus overturns Vidyasagar Setu ramp — 12 injured, 3 critical, emergency services en route',       loc:'Kolkata'},
+  {cat:'pol',  src:'ABP ANANDA',       tag:'nt-pol',  tl:'POLITICS', hl:'CM Mamata holds emergency meeting on cyclone relief — 5 districts on alert, NDRF deployed',      loc:'Kolkata'},
+  {cat:'biz',  src:'ECONOMIC TIMES',   tag:'nt-biz',  tl:'DEAL',     hl:'Samsung MoU for electronics assembly at Falta SEZ — 3,000 jobs, ₹1,800 cr capex, 2026 start',    loc:'S 24 Pgs'},
+  {cat:'tech', src:'INC42',            tag:'nt-tech', tl:'FUNDING',  hl:'Kolkata GoKwik raises ₹140 cr Series C — D2C e-commerce checkout, 5,000 brand clients',          loc:'Kolkata'},
+  {cat:'wx',   src:'IMD KOLKATA',      tag:'nt-wx',   tl:'ALERT',    hl:'Thunderstorm warning 5 districts — Malda, Murshidabad, N Dinajpur yellow alert, hail likely',     loc:'N Bengal'},
+  {cat:'sport',src:'AIFF BENGAL',      tag:'nt-sport',tl:'FOOTBALL', hl:'Mohun Bagan seal AFC Cup spot — 3-0 Churchill Brothers, ISL group leaders confirmed',             loc:'Kolkata'},
+  {cat:'fire', src:'WB FIRE BRIGADE',  tag:'nt-fire', tl:'FIRE',     hl:'Flat fire controlled in Ballygunge — short circuit, 1 minor injury, family evacuated safely',     loc:'Kolkata'},
+  {cat:'health',src:'WB HEALTH DEPT',  tag:'nt-hlth', tl:'HEALTH',   hl:'100% first-dose childhood vaccination achieved 18 districts — WHO team visiting next week',       loc:'State'},
+  {cat:'re',   src:'99ACRES',          tag:'nt-re',   tl:'PROJECT',  hl:'Howrah riverfront township — 3 developers shortlisted, ₹1,800 cr mixed-use project confirmed',    loc:'Howrah'},
+  {cat:'pol',  src:'THE WIRE',         tag:'nt-pol',  tl:'POLITICS', hl:'WB governor writes to CM on civic body elections — constitutional deadline cited, HC petition',    loc:'Kolkata'},
+  {cat:'gov',  src:'PIB KOLKATA',      tag:'nt-gov',  tl:'ADMIN',    hl:'State launches digital birth-death certificate portal — direct delivery to mobile, no BDO visit', loc:'State'},
+  {cat:'crime',src:'SP BIRBHUM',       tag:'nt-crime',tl:'SEIZURE',  hl:'Illegal coal consignment seized NH-2B — 3 trucks, 180 tonnes, 4 arrested, DM alerted',           loc:'Birbhum'},
+];
+let liveIdx=0;
+const CAT_DIST_MAP={crime:'Kolkata',fire:'Kolkata',pol:'Kolkata',biz:'Hooghly',tech:'Kolkata',re:'North 24 Parganas',sport:'Kolkata',health:'Kolkata',gov:'Kolkata',wx:'Murshidabad',fin:'Kolkata',life:'Kolkata'};
+function autoFeed(){
+  setTimeout(()=>{
+    const item={...LIVE_ITEMS[liveIdx%LIVE_ITEMS.length],t:'just now'}; liveIdx++;
+    ALL_NEWS.unshift(item);
+    if(activeCat==='all'||activeCat===item.cat){
+      const el=document.createElement('div'); el.className=`nc ${item.cat}`; el.innerHTML=ncHTML(item);
+      const f=document.getElementById('masterFeed');
+      f.insertBefore(el,f.firstChild); feedCount++;
+      document.getElementById('feedBadge').textContent=feedCount;
+      if(f.children.length>80) f.removeChild(f.lastChild);
+    }
+    // ping map
+    const dist=distFromText(item.loc)||CAT_DIST_MAP[item.cat]||'Kolkata';
+    const pingColor=item.cat==='crime'||item.cat==='fire'?'var(--red)':item.cat==='pol'?'var(--am)':item.cat==='biz'||item.cat==='fin'?'var(--blu)':'var(--grn)';
+    pingDistrict(dist,pingColor);
+    autoFeed();
+  },7000+Math.random()*11000);
+}
+autoFeed();
+
+// ─── POLICE AUTO-LOOP ───
+const LIVE_POL=[
+  {cls:'norm',src:'KOLKATA TRAFFIC',   type:'VIP',    tx:'VIP convoy CM — AJC Bose Rd from Esplanade blocked ~20min. Alt: Park Circus flyover.',         loc:'Kolkata',           t:'now'},
+  {cls:'crit',src:'SP BIRBHUM',        type:'ARREST', tx:'4 arrested illegal sand mining Ajay river Bolpur — JCB seized, DM notified, fast-track court.', loc:'Birbhum · Bolpur',  t:'now'},
+  {cls:'info',src:'WB POWER DEPT',     type:'OUTAGE', tx:'Planned load shedding Durgapur Zone-3 2–4 PM — SMS alerts sent, repair work underway.',          loc:'Burdwan W · Durgapur',t:'now'},
+  {cls:'norm',src:'HOWRAH POLICE',     type:'RECOVERY',tx:'28 bikes, 3 cars recovered overnight Howrah district — registration checks underway.',           loc:'Howrah',            t:'now'},
+  {cls:'crit',src:'GRP SILIGURI',      type:'SEIZURE',tx:'₹22L unaccounted cash seized Siliguri Junction — IT dept informed, FIR under PMLA.',             loc:'Darjeeling · Siliguri',t:'now'},
+  {cls:'info',src:'KOLKATA PORT',      type:'ADMIN',  tx:'Gate 3 halted 3h — worker wage protest resolved, DM notified, production impact minimal.',        loc:'Kolkata · KoPT',    t:'now'},
+];
+let crimeIdx=0;
+function crimeLoop(){
+  setTimeout(()=>{
+    const p=LIVE_POL[crimeIdx%LIVE_POL.length]; crimeIdx++;
+    const el=document.createElement('div'); el.className=`pi ${p.cls}`;
+    el.innerHTML=`<div class="pm"><span class="psrc">${p.src}</span><span class="ptyp">${p.type}</span><span class="ptm">${p.t}</span></div><div class="ptx">${p.tx}</div><div class="ploc">📍 <b>${p.loc}</b></div>`;
+    const loop=document.getElementById('crimeLoop');
+    loop.insertBefore(el,loop.firstChild);
+    if(loop.children.length>30) loop.removeChild(loop.lastChild);
+    pingDistrict(distFromText(p.loc)||'Kolkata','var(--red)');
+    crimeLoop();
+  },12000+Math.random()*14000);
+}
+crimeLoop();
+
+// ─── TRAFFIC STATUS ROTATE ───
+setInterval(()=>{
+  const st=[['CLEAR','ok'],['SLOW','slow'],['BLOCKED','block']];
+  [1,2,3,4].forEach(n=>{
+    if(Math.random()>.65){const [t,c]=st[Math.floor(Math.random()*3)];const el=document.getElementById('ts'+n);if(el){el.textContent=t;el.className=`tc-st ${c}`;}}
+  });
+},38000);
+
+// ─── BOTTOM BAR ROTATION ───
+const BTXTS=[
+  'Crime / Police / Fire: 48 events today · 3 active emergencies · Burrabazar fire · Bidhannagar murder · NH-12 accident',
+  'Politics: CM Mamata Lakshmir Bhandar revision · BJP Cooch Behar rally · Left-Congress alliance talks',
+  'Business / Markets: SENSEX 80,847 +0.43% · Tata Motors Singur EV plant · Amazon WB FC-6 opens April',
+  'Real Estate: Rajarhat +18% YoY · 4,800-unit lottery opens March 20 · Howrah riverfront ₹1,800 cr',
+  'Tech / Startups: MoneyHops $4.2M · GoKwik ₹140 cr · Infosys Sector V +1,200 seats',
+  'Sports / Lifestyle: East Bengal vs MB Derby March 12 · 85K tickets sold · KIFF opens Nov 8',
+  'Health / Weather: Dengue +34% N 24 Pgs · Yellow alert coastal WB · Kolkata AQI 68 Moderate',
+  'Live Sources: 120+ active · Bengali TV · National · Legal · Police · Hyperlocal FB/Telegram groups',
+];
+let btIdx=0;
+setInterval(()=>{document.getElementById('bTxt').textContent=BTXTS[btIdx%BTXTS.length];btIdx++;},5500);
+
+// ─── RSS FETCH ───
+const RSS_DEF=[{url:'https://scroll.in/rss',src:'Scroll.in'},{url:'https://thewire.in/rss',src:'The Wire'},{url:'https://theprint.in/feed',src:'The Print'}];
+const WB_KW=['bengal','kolkata','howrah','siliguri','darjeeling','burdwan','murshidabad','birbhum','midnapore','hooghly','nadia','haldia','durgapur','asansol','west bengal','mamata','wb '];
+async function fetchRSS(){
+  const k=document.getElementById('cfg_r2j')?.value||'';
+  const kp=k?`&api_key=${k}`:'';
+  const custom=(document.getElementById('cfg_rss')?.value||'').split('\n').filter(u=>u.trim()).map(u=>({url:u.trim(),src:'RSS'}));
+  for(const f of[...RSS_DEF,...custom]){
+    try{
+      const r=await fetch(`https://api.rss2json.com/v1/api.json?rss_url=${encodeURIComponent(f.url)}&count=5${kp}`);
+      const data=await r.json();
+      if(data.status==='ok')data.items.forEach(item=>{
+        const txt=(item.title+' '+(item.description||'')).toLowerCase();
+        if(WB_KW.some(kw=>txt.includes(kw))){
+          const d={cat:'gov',src:f.src,tag:'nt-gov',tl:'RSS',hl:item.title.substring(0,130),loc:'West Bengal',t:'live'};
+          ALL_NEWS.unshift(d);
+          if(activeCat==='all'||activeCat==='gov'){
+            const el=document.createElement('div');el.className='nc gov';el.innerHTML=ncHTML(d);
+            const fd=document.getElementById('masterFeed');
+            fd.insertBefore(el,fd.firstChild);
+            if(fd.children.length>80)fd.removeChild(fd.lastChild);
+          }
+        }
+      });
+    }catch(e){}
+    await new Promise(r=>setTimeout(r,1100));
+  }
+}
+fetchRSS(); setInterval(fetchRSS,5*60*1000);
+
+// ─── LAYOUT PRESETS ───
+const LAYOUTS={
+  'default':'188px 1fr 252px 1fr 188px',
+  'wide-feed':'180px 1.4fr 240px 0.8fr 180px',
+  'wide-map':'180px 0.8fr 320px 1fr 180px',
+  'wide-analysis':'180px 0.9fr 240px 1.3fr 180px',
+  'compact':'160px 1fr 220px 1fr 160px',
+};
+function applyLayout(name,btn){
+  document.querySelectorAll('.sz-btn').forEach(b=>b.classList.remove('on'));
+  btn.classList.add('on');
+  document.getElementById('mainGrid').style.gridTemplateColumns=LAYOUTS[name]||LAYOUTS['default'];
+}
+function applyCustomCols(){
+  const v=document.getElementById('cfg_cols').value.trim();
+  if(v) document.getElementById('mainGrid').style.gridTemplateColumns=v;
+}
+
+// ─── CONFIG ───
+function openCfg(){document.getElementById('cfgOv').classList.add('on');loadCfg();}
+function closeCfg(){document.getElementById('cfgOv').classList.remove('on');}
+function openDeploy(){document.getElementById('depOv').classList.add('on');}
+function closeDeploy(){document.getElementById('depOv').classList.remove('on');}
+function openAbout(){document.getElementById('abOv').classList.add('on');}
+function closeAbout(){document.getElementById('abOv').classList.remove('on');}
+
+function loadCfg(){
+  const c=JSON.parse(localStorage.getItem('wbintel_v6')||'{}');
+  ['newsapi','r2j','wxloc','rss','twlist','twprofile'].forEach(k=>{const el=document.getElementById('cfg_'+k);if(el&&c[k])el.value=c[k];});
+  if(c.cols) document.getElementById('mainGrid').style.gridTemplateColumns=c.cols;
+}
+function saveCfg(){
+  const c={};
+  ['newsapi','r2j','wxloc','rss','twlist','twprofile'].forEach(k=>{const el=document.getElementById('cfg_'+k);if(el)c[k]=el.value;});
+  c.cols=document.getElementById('mainGrid').style.gridTemplateColumns||'';
+  localStorage.setItem('wbintel_v6',JSON.stringify(c));
+  // apply twitter
+  const twUrl=c.twlist||c.twprofile;
+  if(twUrl) loadTwitter(twUrl);
+  const ok=document.getElementById('cfgOk'); ok.classList.add('on');
+  setTimeout(()=>{ok.classList.remove('on');fetchRSS();},2800);
+}
+function exportCfg(){
+  const a=document.createElement('a');
+  a.href=URL.createObjectURL(new Blob([localStorage.getItem('wbintel_v6')||'{}'],{type:'application/json'}));
+  a.download='wbintel-v6-config.json'; a.click();
+}
+function addRSS(u){const ta=document.getElementById('cfg_rss');ta.value=(ta.value.trim()?ta.value.trim()+'\n':'')+u;}
+
+// ─── INIT ───
+buildCrimeLoop();
+buildPolFeed();
+buildFinance();
+buildBizPanel();
+buildDists();
+buildSources();
+buildMoreChannels();
+buildFeed();
+loadCfg();
+// auto-get weather
+getWeather();
+// initial map pings
+setTimeout(()=>{pingDistrict('Kolkata','var(--red)');},1500);
+setTimeout(()=>{pingDistrict('North 24 Parganas','var(--red)');},2200);
+setTimeout(()=>{pingDistrict('Murshidabad','var(--am)');},3000);
+setTimeout(()=>{pingDistrict('Birbhum','var(--am)');},3800);
+setTimeout(()=>{pingDistrict('Howrah','var(--blu)');},4600);
+</script>
+</body>
+</html>
