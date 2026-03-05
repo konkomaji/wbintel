@@ -1,274 +1,246 @@
 <!DOCTYPE html>
 <!--
-  WBIntel — West Bengal State Intelligence Monitor v6.0
-  Author: Konko Maji
-  License: MIT
-  Deploy: Netlify (drag-and-drop, zero backend)
+  WBIntel — West Bengal's Real Time Intelligence Dashboard v7.0
+  Author: Konko Maji · License: MIT
+  Deploy: Netlify drag-and-drop, zero backend
 -->
 <html lang="en">
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>WBIntel · West Bengal State Monitor</title>
-  <meta name="description" content="Real-time intelligence dashboard for West Bengal — politics, crime, business, weather, maps, live TV.">
+  <title>WBIntel — West Bengal's Real Time Intelligence Dashboard</title>
+  <meta name="description" content="Real-time intelligence dashboard for West Bengal — politics, crime, business, weather, maps, live TV. Everything Everywhere All at Once.">
+  <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>📡</text></svg>">
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=JetBrains+Mono:wght@400;500;700&family=Source+Sans+3:wght@400;500;600;700&display=swap" rel="stylesheet">
-  <link rel="stylesheet" href="style.css">
+  <link rel="stylesheet" href="css/style.css">
   <script src="https://cdnjs.cloudflare.com/ajax/libs/d3/7.8.5/d3.min.js" defer></script>
 </head>
-<body>
-  <!-- SCAN LINES OVERLAY -->
+<body data-theme="dark">
+
+  <!-- MOBILE WARNING -->
+  <div id="mobileWarning" class="mobile-warning">
+    <div class="mobile-warning-box">
+      <div class="mw-icon">🖥️</div>
+      <h2 class="mw-title">Desktop Experience Required</h2>
+      <p class="mw-text">WBIntel is a dense intelligence dashboard built for desktop and laptop screens (1366px and above).</p>
+      <p class="mw-text">The multi-column layout, live district map, real-time feeds, and monitoring tools need a larger screen to function properly.</p>
+      <p class="mw-sub">Please open this on a desktop or laptop browser for the full experience.</p>
+      <button class="mw-btn" onclick="document.getElementById('mobileWarning').style.display='none'">Continue Anyway →</button>
+    </div>
+  </div>
+
+  <!-- BREAKING NEWS ALERT BAR -->
+  <div id="breakingAlert" class="breaking-alert" style="display:none">
+    <div class="ba-flash"></div>
+    <div class="ba-badge"><span class="ba-dot"></span>BREAKING</div>
+    <div class="ba-text" id="breakingAlertText"></div>
+    <button class="ba-close" onclick="WBIntel.Alerts.dismiss()">✕</button>
+  </div>
+
+  <!-- SCANLINES -->
   <div class="scanlines"></div>
 
   <!-- TICKER BAR -->
   <div id="tickerBar" class="ticker-bar">
-    <div class="ticker-badge">
-      <span class="ticker-dot"></span>WBIntel LIVE
-    </div>
+    <div class="ticker-badge"><span class="ticker-dot"></span>LIVE</div>
     <div class="ticker-track">
       <div id="tickerContent" class="ticker-content">
-        <span class="ticker-placeholder">Initializing feeds — live headlines will appear here…</span>
+        <span class="ticker-placeholder">Initializing live feeds — headlines will appear shortly…</span>
       </div>
     </div>
   </div>
 
-  <!-- HEADER BAR -->
-  <header id="headerBar" class="header-bar">
+  <!-- HEADER -->
+  <header class="header-bar">
     <div class="header-left">
-      <div class="logo">
-        <span class="logo-wb">WB</span><span class="logo-intel">Intel</span>
-      </div>
+      <div class="logo"><span class="logo-wb">WB</span><span class="logo-intel">Intel</span></div>
       <div class="header-sep"></div>
-      <div class="header-tagline">
-        West Bengal State Monitor<span class="tagline-dot">·</span>All Categories<span class="tagline-dot">·</span><span class="live-tag">LIVE</span>
-      </div>
+      <div class="header-tagline">West Bengal's Real Time Intelligence Dashboard</div>
     </div>
     <div class="header-centre">
-      <div id="headerCounters" class="header-counters">
-        <!-- Populated by JS -->
+      <div class="quick-search">
+        <span class="qs-icon">🔍</span>
+        <input type="text" id="quickSearchInput" class="qs-input" placeholder="Search all news…" oninput="WBIntel.Feeds.search(this.value)">
       </div>
     </div>
     <div class="header-right">
-      <div id="istClock" class="ist-clock">--:--:--</div>
+      <div id="headerCounters" class="header-counters"></div>
       <div class="header-sep"></div>
-      <button class="hdr-btn" onclick="WBIntel.showAbout()" title="About">ℹ About</button>
-      <button class="hdr-btn" onclick="WBIntel.showDeploy()" title="Deploy Guide">🚀 Deploy</button>
-      <button class="hdr-btn btn-config" onclick="WBIntel.toggleConfig()" title="Settings">⚙ Config</button>
+      <div id="istClock" class="ist-clock">
+        <div class="clock-time" id="clockTime">--:-- --</div>
+        <div class="clock-date" id="clockDate">---</div>
+      </div>
+      <div class="header-sep"></div>
+      <button class="hdr-btn" id="themeToggle" onclick="WBIntel.toggleTheme()" title="Day/Night">🌙</button>
+      <button class="hdr-btn" onclick="WBIntel.showAbout()" title="About">ℹ</button>
+      <button class="hdr-btn btn-config" onclick="WBIntel.toggleSettings()" title="Settings">⚙</button>
     </div>
   </header>
 
-  <!-- MAIN 3-COLUMN GRID -->
+  <!-- MAIN GRID -->
   <main id="mainGrid" class="main-grid">
+
     <!-- LEFT COLUMN -->
     <section id="colLeft" class="column col-left">
-
-      <!-- Twitter Profile Feed -->
-      <div class="panel" id="panelTwitterProfile">
+      <div class="panel" id="panelXProfile">
         <div class="panel-header">
-          <span class="panel-icon">🐦</span>
-          <span class="panel-title">Twitter · Profile Feed</span>
-          <button class="panel-btn" onclick="WBIntel.Twitter.reloadProfiles()" title="Refresh">↻</button>
+          <span class="panel-icon">𝕏</span>
+          <span class="panel-title">X · Profile Feeds</span>
+          <button class="panel-btn" onclick="WBIntel.XFeed.reloadProfiles()" title="Refresh">↻</button>
         </div>
-        <div class="panel-body" id="twitterProfileBody">
-          <div class="onboard-card">
-            <p>No Twitter handles configured.</p>
-            <p class="onboard-hint">Open <strong>⚙ Config → Twitter</strong> to add handles like <code>@WBPolice</code>, <code>@mamataofficial</code></p>
-          </div>
+        <div class="panel-body" id="xProfileBody">
+          <div class="panel-loading"><div class="loader"></div><span>Loading X feeds…</span></div>
         </div>
       </div>
 
-      <!-- Twitter Keyword Feed -->
-      <div class="panel" id="panelTwitterKeyword">
+      <div class="panel" id="panelXKeyword">
         <div class="panel-header">
-          <span class="panel-icon">#️⃣</span>
-          <span class="panel-title">Twitter · Keywords & Hashtags</span>
-          <button class="panel-btn" onclick="WBIntel.Twitter.reloadKeywords()" title="Refresh">↻</button>
+          <span class="panel-icon">#</span>
+          <span class="panel-title">X · Keywords & Hashtags</span>
+          <button class="panel-btn" onclick="WBIntel.XFeed.reloadKeywords()" title="Refresh">↻</button>
         </div>
-        <div class="panel-body" id="twitterKeywordBody">
-          <div class="onboard-card">
-            <p>No keywords configured.</p>
-            <p class="onboard-hint">Open <strong>⚙ Config → Twitter</strong> to add hashtags like <code>#WestBengal</code>, <code>#কলকাতা</code></p>
-          </div>
+        <div class="panel-body" id="xKeywordBody">
+          <div class="panel-loading"><div class="loader"></div><span>Loading…</span></div>
         </div>
       </div>
 
-      <!-- Live TV -->
       <div class="panel" id="panelLiveTV">
         <div class="panel-header">
           <span class="panel-icon">📺</span>
           <span class="panel-title">Live TV · Bengali News</span>
         </div>
-        <div class="panel-body" id="liveTVBody">
-          <div class="tv-grid" id="tvGrid">
-            <!-- Populated by JS -->
-          </div>
-        </div>
+        <div class="panel-body"><div class="tv-grid" id="tvGrid"></div></div>
       </div>
 
-      <!-- Weather -->
       <div class="panel" id="panelWeather">
         <div class="panel-header">
           <span class="panel-icon">🌤</span>
-          <span class="panel-title">West Bengal Weather</span>
+          <span class="panel-title">Weather · WB Divisions</span>
           <button class="panel-btn" onclick="WBIntel.Weather.refresh()" title="Refresh">↻</button>
         </div>
-        <div class="panel-body" id="weatherBody">
-          <div class="weather-grid" id="weatherGrid">
-            <!-- 4 city cards populated by JS -->
-          </div>
-        </div>
+        <div class="panel-body"><div class="weather-grid" id="weatherGrid"></div></div>
       </div>
     </section>
 
-    <!-- DIVIDER 1 -->
     <div class="col-divider" id="divider1"></div>
 
     <!-- CENTRE COLUMN -->
     <section id="colCentre" class="column col-centre">
+      <div class="panel panel-politics" id="panelPolitics">
+        <div class="panel-header">
+          <span class="panel-icon">🏛</span>
+          <span class="panel-title">Politics · West Bengal</span>
+          <button class="panel-btn" onclick="WBIntel.Feeds.refreshAll()" title="Refresh">↻</button>
+          <span class="panel-meta" id="politicsLastFetch"></span>
+        </div>
+        <div class="panel-body feed-scroll" id="politicsBody">
+          <div class="panel-loading"><div class="loader"></div><span>Fetching…</span></div>
+        </div>
+      </div>
 
-      <!-- WB District Map -->
       <div class="panel panel-map" id="panelMap">
         <div class="panel-header">
           <span class="panel-icon">🗺</span>
-          <span class="panel-title">West Bengal · Live District Activity</span>
+          <span class="panel-title">West Bengal · District Map</span>
           <span id="mapDistrictFilter" class="map-filter-tag" style="display:none">
             <span id="mapFilterName"></span>
             <button class="filter-clear" onclick="WBIntel.Map.clearFilter()">✕</button>
           </span>
         </div>
         <div class="panel-body panel-map-body" id="mapBody">
-          <div class="map-loading" id="mapLoading">
-            <div class="loader"></div>
-            <span>Loading WB GeoJSON…</span>
-          </div>
+          <div class="map-loading" id="mapLoading"><div class="loader"></div><span>Loading WB district map…</span></div>
           <svg id="wbMapSvg" class="wb-map-svg"></svg>
           <div id="mapTooltip" class="map-tooltip"></div>
         </div>
       </div>
 
-      <!-- Politics Feed -->
-      <div class="panel" id="panelPolitics">
+      <div class="panel panel-strip" id="panelDistrictStrip">
         <div class="panel-header">
-          <span class="panel-icon">🏛</span>
-          <span class="panel-title">Politics · West Bengal Live</span>
-          <button class="panel-btn" onclick="WBIntel.Feeds.refreshCategory('politics')" title="Refresh">↻</button>
-          <span class="panel-meta" id="politicsLastFetch"></span>
+          <span class="panel-icon">📊</span>
+          <span class="panel-title">Most Active Districts</span>
         </div>
-        <div class="panel-body feed-scroll" id="politicsBody">
-          <!-- Populated by JS -->
+        <div class="panel-body district-strip" id="districtStripBody">
+          <span class="t3">Awaiting data…</span>
         </div>
       </div>
     </section>
 
-    <!-- DIVIDER 2 -->
     <div class="col-divider" id="divider2"></div>
 
     <!-- RIGHT COLUMN -->
     <section id="colRight" class="column col-right">
-
-      <!-- Master News Feed -->
-      <div class="panel" id="panelMasterFeed">
+      <div class="panel panel-master" id="panelMasterFeed">
         <div class="panel-header">
           <span class="panel-icon">📡</span>
           <span class="panel-title">All Feeds · West Bengal</span>
-          <button class="panel-btn" onclick="WBIntel.Feeds.refreshAll()" title="Refresh All">↻</button>
+          <button class="panel-btn" onclick="WBIntel.Feeds.refreshAll()" title="Refresh">↻</button>
+          <span class="panel-meta" id="feedLastUpdate"></span>
         </div>
-        <div class="feed-filter-bar" id="feedFilterBar">
-          <!-- Category pills populated by JS -->
-        </div>
-        <div class="panel-body feed-scroll" id="masterFeedBody">
-          <!-- News cards populated by JS -->
+        <div class="feed-filter-bar" id="feedFilterBar"></div>
+        <div class="panel-body feed-scroll feed-master" id="masterFeedBody">
+          <div class="panel-loading"><div class="loader"></div><span>Fetching live feeds…</span></div>
         </div>
       </div>
-
-      <!-- Category Panels (collapsible) -->
-      <div id="categoryPanels">
-        <!-- Generated by JS -->
-      </div>
+      <div id="categoryPanels"></div>
     </section>
   </main>
 
-  <!-- BOTTOM STATUS BAR -->
-  <footer id="statusBar" class="status-bar">
-    <div class="status-left" id="statusCounters">
-      <!-- counters -->
-    </div>
-    <div class="status-centre" id="statusRotating">
-      WBIntel initializing…
-    </div>
+  <!-- STATUS BAR -->
+  <footer class="status-bar">
+    <div class="status-left" id="statusCounters"></div>
+    <div class="status-centre" id="statusRotating">WBIntel initializing…</div>
     <div class="status-right">
-      WBIntel v6 · MIT · Konko Maji · Open Source
+      <img src="https://visitor-badge.laobi.icu/badge?page_id=wbintel-wb-dashboard&left_color=%23131527&right_color=%23ffaa00&left_text=visitors" alt="visitors" class="visitor-badge" onerror="this.style.display='none'">
+      <span>·</span> WBIntel v7 · MIT · Konko Maji
     </div>
   </footer>
 
-  <!-- CONFIG PANEL (slide-in) -->
-  <div id="configOverlay" class="config-overlay" onclick="WBIntel.toggleConfig()"></div>
-  <aside id="configPanel" class="config-panel">
+  <!-- SETTINGS PANEL -->
+  <div id="settingsOverlay" class="config-overlay" onclick="WBIntel.toggleSettings()"></div>
+  <aside id="settingsPanel" class="config-panel">
     <div class="config-header">
-      <span class="config-title">⚙ Configuration</span>
-      <button class="config-close" onclick="WBIntel.toggleConfig()">✕</button>
+      <span class="config-title">⚙ Settings</span>
+      <button class="config-close" onclick="WBIntel.toggleSettings()">✕</button>
     </div>
-    <div class="config-body" id="configBody">
-      <!-- Populated by config.js -->
-    </div>
+    <div class="config-body" id="settingsBody"></div>
   </aside>
 
   <!-- ABOUT MODAL -->
   <div id="aboutModal" class="modal-overlay" onclick="WBIntel.closeModals()">
     <div class="modal-box" onclick="event.stopPropagation()">
-      <div class="modal-header">
-        <span>ℹ About WBIntel</span>
-        <button class="modal-close" onclick="WBIntel.closeModals()">✕</button>
-      </div>
+      <div class="modal-header"><span>About WBIntel</span><button class="modal-close" onclick="WBIntel.closeModals()">✕</button></div>
       <div class="modal-body">
         <h2 class="modal-logo"><span class="logo-wb">WB</span><span class="logo-intel">Intel</span></h2>
-        <p>West Bengal State Intelligence Monitor v6.0</p>
-        <p class="t2">A real-time intelligence dashboard aggregating news, social media, weather, live TV, and district-level activity across all 23 districts of West Bengal.</p>
-        <p class="t2">Built for journalists, researchers, political analysts, and civic watchers who need total situational awareness.</p>
+        <p class="about-subtitle">West Bengal's Real Time Intelligence Dashboard</p>
+        <p class="about-tagline">Everything. Everywhere. All at Once.</p>
         <hr class="modal-hr">
-        <p class="t2">Created by <strong>Konko Maji</strong> · MIT License · Open Source</p>
-        <p class="t2">All data fetched live from public APIs & RSS feeds. No backend required.</p>
+        <p>WBIntel is a real-time open-source intelligence monitor that aggregates everything happening across <strong>all 23 districts of West Bengal</strong> — live news, politics, crime, business, weather, social media, and more — into a single dense dashboard.</p>
+        <h3>Built For</h3>
+        <p>📰 <strong>Journalists</strong> — Monitor breaking stories across all beats and districts in real time</p>
+        <p>🔬 <strong>Political & Policy Analysts</strong> — Track political developments, government actions, and civic movements</p>
+        <p>📺 <strong>News Enthusiasts</strong> — Stay informed about everything happening in West Bengal, all in one place</p>
+        <p>🎓 <strong>Mass Communication Students</strong> — Study real-time news flow, media coverage patterns, and regional journalism</p>
+        <p>📊 <strong>Researchers</strong> — Aggregate and analyze information flow across categories and districts</p>
+        <hr class="modal-hr">
+        <h3>How It Works</h3>
+        <p>All data is fetched <strong>live</strong> from 20+ public RSS feeds, WeatherAPI.com, X embeds, and YouTube Live. Zero backend — everything runs in your browser. No fake data, no placeholders. If a source fails, you see an error with a retry button.</p>
+        <hr class="modal-hr">
+        <p class="about-footer">Created by <strong>Konko Maji</strong> · MIT License · Open Source<br><span class="t2">Zero backend · Pure HTML/CSS/JS · Hosted free on Netlify</span></p>
       </div>
     </div>
   </div>
 
-  <!-- DEPLOY MODAL -->
-  <div id="deployModal" class="modal-overlay" onclick="WBIntel.closeModals()">
-    <div class="modal-box modal-wide" onclick="event.stopPropagation()">
-      <div class="modal-header">
-        <span>🚀 Deploy Guide</span>
-        <button class="modal-close" onclick="WBIntel.closeModals()">✕</button>
-      </div>
-      <div class="modal-body">
-        <h3>GitHub Setup</h3>
-        <ol>
-          <li>Go to <code>github.com</code> → New repository → name <code>wbintel</code> → Public → Create</li>
-          <li>Upload all project files via Add file → Upload files</li>
-          <li>Commit with message <code>initial deploy</code></li>
-        </ol>
-        <h3>Netlify Auto-Deploy</h3>
-        <ol>
-          <li>Go to <code>app.netlify.com</code> → Sign up with GitHub → Add new site → Import from GitHub</li>
-          <li>Select <code>wbintel</code> repo → Leave build settings empty (plain HTML) → Deploy</li>
-          <li>Rename site to <code>wbintel.netlify.app</code> in Site settings</li>
-          <li>Done — every push to GitHub auto-deploys in ~15 seconds</li>
-        </ol>
-        <h3>Custom Domain (optional)</h3>
-        <p>Free: <code>wbintel.rf.gd</code> via InfinityFree<br>Paid .in: ~₹499/yr via BigRock or GoDaddy → add CNAME to Netlify</p>
-      </div>
-    </div>
-  </div>
-
-  <!-- SCRIPTS -->
-  <script src="utils.js"></script>
-  <script src="config.js"></script>
-  <script src="resize.js"></script>
-  <script src="weather.js"></script>
-  <script src="map.js"></script>
-  <script src="feeds.js"></script>
-  <script src="twitter.js"></script>
-  <script src="ticker.js"></script>
-  <script src="app.js"></script>
+  <script src="js/utils.js"></script>
+  <script src="js/settings.js"></script>
+  <script src="js/resize.js"></script>
+  <script src="js/weather.js"></script>
+  <script src="js/map.js"></script>
+  <script src="js/feeds.js"></script>
+  <script src="js/xfeed.js"></script>
+  <script src="js/ticker.js"></script>
+  <script src="js/alerts.js"></script>
+  <script src="js/app.js"></script>
 </body>
 </html>
