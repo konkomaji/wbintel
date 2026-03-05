@@ -2,7 +2,13 @@
    WBIntel v7.0 · map.js — WB District Map (D3.js)
    ============================================================ */
 const WBMap = (() => {
-  const GEOJSON_URL = 'https://raw.githubusercontent.com/datameet/maps/master/Districts/WB.geojson';
+  // Multiple GeoJSON sources — try in order until one works
+  const GEOJSON_URLS = [
+    'https://raw.githubusercontent.com/datta07/INDIAN-SHAPEFILES/master/STATES/WEST%20BENGAL/WEST%20BENGAL_DISTRICTS.geojson',
+    'https://cdn.jsdelivr.net/gh/udit-001/india-maps-data@main/geojson/states/west-bengal.geojson',
+    'https://raw.githubusercontent.com/Subhash9325/GeoJson-Data-of-Indian-States/master/West%20Bengal.json',
+    'https://raw.githubusercontent.com/geohacker/india/master/district/india_district.geojson',
+  ];
   let _svg, _projection, _pathGen, _centroids = {}, _districtEvents = {}, _activeFilter = null;
 
   const CAT_COLORS = {
@@ -13,7 +19,8 @@ const WBMap = (() => {
   };
 
   function getDistName(props) {
-    return props.dtname || props.DISTRICT || props.district || props.NAME_2 || props.name || 'Unknown';
+    return props.dtname || props.DISTRICT || props.district || props.NAME_2 || props.name ||
+           props.Dist_Name || props.DIST_NAME || props.distname || props.shapeName || 'Unknown';
   }
 
   function abbreviate(name) {
@@ -154,11 +161,32 @@ const WBMap = (() => {
   }
 
   async function init() {
-    const data = await safeFetch(GEOJSON_URL, 'WB GeoJSON');
+    let data = null;
+
+    // Try each source in order
+    for (const url of GEOJSON_URLS) {
+      data = await safeFetch(url, 'WB GeoJSON');
+      if (data && data.features && data.features.length > 0) {
+        // If this is India-wide data, filter to WB only
+        if (data.features.length > 30) {
+          data.features = data.features.filter(f => {
+            const props = f.properties || {};
+            const st = (props.ST_NM || props.NAME_1 || props.state || props.statename || '').toLowerCase();
+            return st.includes('west bengal') || st.includes('bengal');
+          });
+        }
+        if (data.features.length > 0) {
+          console.log('[WBMap] Loaded from:', url, '— Districts:', data.features.length);
+          break;
+        }
+      }
+      data = null; // reset and try next
+    }
+
     if (!data || !data.features || data.features.length === 0) {
       document.getElementById('mapLoading').innerHTML = `
         <div class="fetch-error"><div class="fe-icon">⚠</div>
-        <div class="fe-msg">Failed to load WB map data.<br>This requires internet access to fetch GeoJSON.</div>
+        <div class="fe-msg">Failed to load WB map data.<br>Check internet connection and try again.</div>
         <button class="fe-retry" onclick="WBIntel.Map.init()">Retry</button></div>`;
       return;
     }
