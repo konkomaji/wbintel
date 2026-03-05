@@ -145,8 +145,7 @@ body {
   font-family: 'JetBrains Mono'; font-size: 10.5px; color: var(--t1);
   will-change: transform;
 }
-.ticker-content.scrolling { animation: scrollLeft var(--ticker-duration, 120s) linear infinite; }
-.ticker-content:hover { animation-play-state: paused; }
+.ticker-content:hover { animation-play-state: paused !important; }
 .ticker-placeholder { color: var(--t3); font-style: italic; }
 .ticker-item { display: inline-flex; gap: 6px; align-items: center; }
 .ticker-item .ti-cat { font-weight: 700; text-transform: uppercase; letter-spacing: 1px; font-size: 8.5px; }
