@@ -1,40 +1,12 @@
-/* ============================================================
-   WBIntel v7.1 · ticker.js — Scrolling news ticker (FIXED)
-   ============================================================ */
+/* WBIntel · ticker.js — Scrolling ticker using CONFIG */
 const Ticker = (() => {
-  let _initialized = false;
-
   function updateItems(items) {
-    const el = document.getElementById('tickerContent');
-    if (!el || !items || items.length === 0) return;
-
-    const html = items.map(item => {
-      const cat = CATEGORIES[item.category] || { label: 'NEWS', color: '#aaa' };
-      return `<span class="ticker-item">
-        <span class="ti-cat" style="color:${cat.color}">◆ ${cat.label.toUpperCase()}</span>
-        <span>${esc(truncate(item.title, 90))}</span>
-        <span style="color:var(--t3)">· ${esc(item.source)} · ${timeAgo(item.pubDate)}</span>
-      </span>`;
-    }).join('');
-
-    // Duplicate content for seamless infinite scroll
-    el.innerHTML = html + html;
-
-    // Remove old animation class, force reflow, re-apply
-    el.classList.remove('scrolling');
-    el.style.animation = 'none';
-    void el.offsetHeight; // trigger reflow
-
-    const duration = Math.max(60, items.length * 4);
-    el.style.animation = `scrollLeft ${duration}s linear infinite`;
-    el.classList.add('scrolling');
-    _initialized = true;
+    const el=document.getElementById('tickerContent');if(!el||!items||!items.length)return;
+    const html=items.map(i=>{const c=CATEGORIES[i.category]||{label:'NEWS',color:'#aaa'};return`<span class="ticker-item"><span class="ti-cat" style="color:${c.color}">◆ ${c.label.toUpperCase()}</span><span>${esc(truncate(i.title,90))}</span><span style="color:var(--t3)">· ${esc(i.source)} · ${timeAgo(i.pubDate)}</span></span>`;}).join('');
+    el.innerHTML=html+html;
+    el.style.animation='none';void el.offsetHeight;
+    el.style.animation=`scrollLeft ${Math.max(60,items.length*CONFIG.timers.tickerSpeed)}s linear infinite`;
   }
-
-  function init() {
-    // Initial placeholder is set in HTML
-    _initialized = false;
-  }
-
-  return { init, updateItems };
+  function init(){}
+  return {init,updateItems};
 })();
